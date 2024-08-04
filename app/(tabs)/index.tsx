@@ -11,6 +11,36 @@ import { Ionicons } from "@expo/vector-icons";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 
+// 預定義貓咪圖片數組
+const catImages = [
+  require('@/assets/images/cat-1.jpg'),
+  require('@/assets/images/cat-2.jpg'),
+  require('@/assets/images/cat-3.jpg'),
+  require('@/assets/images/cat-4.jpg'),
+  require('@/assets/images/cat-5.jpg'),
+  require('@/assets/images/cat-6.jpg'),
+  require('@/assets/images/cat-7.jpg'),
+  require('@/assets/images/cat-8.jpg'),
+  require('@/assets/images/cat-9.jpg'),
+  require('@/assets/images/cat-10.jpg'),
+  require('@/assets/images/cat-11.jpg'),
+  require('@/assets/images/cat-12.jpg'),
+  require('@/assets/images/cat-13.jpg'),
+  require('@/assets/images/cat-14.jpg'),
+  require('@/assets/images/cat-15.jpg'),
+  require('@/assets/images/cat-16.jpg'),
+  require('@/assets/images/cat-17.jpg'),
+  require('@/assets/images/cat-18.jpg'),
+  require('@/assets/images/cat-19.jpg'),
+  require('@/assets/images/cat-20.jpg'),
+];
+
+// 修改 getRandomCatImage 函數
+const getRandomCatImage = () => {
+  const index = Math.floor(Math.random() * catImages.length);
+  return catImages[index];
+};
+
 interface CardProps {
   title: string;
   iconName: string;
@@ -45,11 +75,7 @@ const Card: React.FC<CardProps> = ({ title, iconName, imageCount }) => {
             {[...Array(imageCount)].map((_, index) => (
               <TouchableOpacity key={index}>
                 <Image
-                  source={{
-                    uri: `https://cataas.com/cat/says/${title}${
-                      index + 1
-                    }?size=50&color=white`,
-                  }}
+                  source={getRandomCatImage()}
                   style={styles.cardImage}
                 />
               </TouchableOpacity>
@@ -90,17 +116,6 @@ export default function HomeScreen() {
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">My Closet</ThemedText>
-        <TouchableOpacity>
-          <Ionicons
-            name="search-outline"
-            size={24}
-            color={isDarkMode ? "#64D2FF" : "#007AFF"}
-          />
-        </TouchableOpacity>
-      </ThemedView>
-
       {categories.map((category, index) => (
         <Card key={index} {...category} />
       ))}
@@ -109,14 +124,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 60,
-    paddingBottom: 32,
-  },
   cardContainer: {
     paddingHorizontal: 16,
     paddingBottom: 16,
