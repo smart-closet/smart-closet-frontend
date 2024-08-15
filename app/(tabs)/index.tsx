@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -10,44 +10,15 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-
-// 預定義貓咪圖片數組
-const catImages = [
-  require('@/assets/images/cat-1.jpg'),
-  require('@/assets/images/cat-2.jpg'),
-  require('@/assets/images/cat-3.jpg'),
-  require('@/assets/images/cat-4.jpg'),
-  require('@/assets/images/cat-5.jpg'),
-  require('@/assets/images/cat-6.jpg'),
-  require('@/assets/images/cat-7.jpg'),
-  require('@/assets/images/cat-8.jpg'),
-  require('@/assets/images/cat-9.jpg'),
-  require('@/assets/images/cat-10.jpg'),
-  require('@/assets/images/cat-11.jpg'),
-  require('@/assets/images/cat-12.jpg'),
-  require('@/assets/images/cat-13.jpg'),
-  require('@/assets/images/cat-14.jpg'),
-  require('@/assets/images/cat-15.jpg'),
-  require('@/assets/images/cat-16.jpg'),
-  require('@/assets/images/cat-17.jpg'),
-  require('@/assets/images/cat-18.jpg'),
-  require('@/assets/images/cat-19.jpg'),
-  require('@/assets/images/cat-20.jpg'),
-];
-
-// 修改 getRandomCatImage 函數
-const getRandomCatImage = () => {
-  const index = Math.floor(Math.random() * catImages.length);
-  return catImages[index];
-};
+import { Item, useItems } from "@/hooks/useItems";
 
 interface CardProps {
   title: string;
   iconName: string;
-  imageCount: number;
+  items: Item[];
 }
 
-const Card: React.FC<CardProps> = ({ title, iconName, imageCount }) => {
+const Card: React.FC<CardProps> = ({ title, iconName, items }) => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
 
@@ -71,10 +42,10 @@ const Card: React.FC<CardProps> = ({ title, iconName, imageCount }) => {
         </ThemedView>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <ThemedView style={styles.imageContainer}>
-            {[...Array(imageCount)].map((_, index) => (
+            {items.map((item, index) => (
               <TouchableOpacity key={index}>
                 <Image
-                  source={getRandomCatImage()}
+                  source={{ uri: item.image_url }}
                   style={styles.cardImage}
                 />
               </TouchableOpacity>
@@ -90,26 +61,37 @@ export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
 
+  const { getItems } = useItems();
+  const [items, setItems] = useState<Item[]>([]);
+  
+  useEffect(() => {
+    const fetchItems = async () => {
+      const fetchedItems = await getItems();
+      setItems(fetchedItems);
+    };
+    fetchItems();
+  }, []);
+
   const categories = [
     {
       title: "Tops",
       iconName: "shirt-outline",
-      imageCount: Math.floor(Math.random() * 6) + 3,
+      items: items
     },
     {
       title: "Bottoms",
       iconName: "cut-outline",
-      imageCount: Math.floor(Math.random() * 4) + 2,
+      items: items
     },
     {
       title: "Shoes",
       iconName: "footsteps-outline",
-      imageCount: Math.floor(Math.random() * 3) + 2,
+      items: items
     },
     {
       title: "Bags",
       iconName: "bag-handle-outline",
-      imageCount: Math.floor(Math.random() * 3) + 2,
+      items: items
     },
   ];
 
