@@ -14,6 +14,8 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { Colors } from "@/constants/Colors";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -48,9 +50,14 @@ export default function RootLayout() {
                   justifyContent: "space-between",
                   alignItems: "center",
                   paddingHorizontal: 16,
-                  paddingTop: 30,
-                  paddingBottom: 12,
-                  backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#FFFFFF",
+                  paddingVertical: 12,
+                  backgroundColor: useThemeColor(
+                    {
+                      light: Colors["light"].background,
+                      dark: Colors["dark"].background,
+                    },
+                    "background"
+                  ),
                 }}
               >
                 <ThemedText type="title" style={{fontSize: 20}}>My Closet</ThemedText>
@@ -58,7 +65,6 @@ export default function RootLayout() {
                   <Ionicons
                     name="search-outline"
                     size={24}
-                    color={colorScheme === "dark" ? "#64D2FF" : "#007AFF"}
                   />
                 </TouchableOpacity>
               </ThemedView>

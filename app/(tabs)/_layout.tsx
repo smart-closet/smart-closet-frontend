@@ -12,7 +12,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: Colors[colorScheme ?? "light"].text,
         headerShown: false,
         tabBarStyle: {
           backgroundColor: useThemeColor(
@@ -30,10 +30,9 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, focused }) => (
+          tabBarIcon: ({ focused }) => (
             <TabBarIcon
               name={focused ? "home" : "home-outline"}
-              color={color}
             />
           ),
         }}
@@ -42,10 +41,9 @@ export default function TabLayout() {
         name="outfit"
         options={{
           title: "Outfit",
-          tabBarIcon: ({ color, focused }) => (
+          tabBarIcon: ({ focused }) => (
             <TabBarIcon
               name={focused ? "shirt" : "shirt-outline"}
-              color={color}
             />
           ),
         }}

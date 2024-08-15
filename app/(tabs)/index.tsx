@@ -58,7 +58,6 @@ const Card: React.FC<CardProps> = ({ title, iconName, imageCount }) => {
           <Ionicons
             name={iconName as any}
             size={28}
-            color={isDarkMode ? "#64D2FF" : "#007AFF"}
             style={styles.cardIcon}
           />
           <ThemedText type="defaultSemiBold" style={styles.cardTitle}>

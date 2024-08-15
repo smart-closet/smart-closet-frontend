@@ -16,26 +16,26 @@ import { ThemedView } from "@/components/ThemedView";
 import { Ionicons } from "@expo/vector-icons";
 
 const catImages = [
-  require('@/assets/images/cat-1.jpg'),
-  require('@/assets/images/cat-2.jpg'),
-  require('@/assets/images/cat-3.jpg'),
-  require('@/assets/images/cat-4.jpg'),
-  require('@/assets/images/cat-5.jpg'),
-  require('@/assets/images/cat-6.jpg'),
-  require('@/assets/images/cat-7.jpg'),
-  require('@/assets/images/cat-8.jpg'),
-  require('@/assets/images/cat-9.jpg'),
-  require('@/assets/images/cat-10.jpg'),
-  require('@/assets/images/cat-11.jpg'),
-  require('@/assets/images/cat-12.jpg'),
-  require('@/assets/images/cat-13.jpg'),
-  require('@/assets/images/cat-14.jpg'),
-  require('@/assets/images/cat-15.jpg'),
-  require('@/assets/images/cat-16.jpg'),
-  require('@/assets/images/cat-17.jpg'),
-  require('@/assets/images/cat-18.jpg'),
-  require('@/assets/images/cat-19.jpg'),
-  require('@/assets/images/cat-20.jpg'),
+  require("@/assets/images/cat-1.jpg"),
+  require("@/assets/images/cat-2.jpg"),
+  require("@/assets/images/cat-3.jpg"),
+  require("@/assets/images/cat-4.jpg"),
+  require("@/assets/images/cat-5.jpg"),
+  require("@/assets/images/cat-6.jpg"),
+  require("@/assets/images/cat-7.jpg"),
+  require("@/assets/images/cat-8.jpg"),
+  require("@/assets/images/cat-9.jpg"),
+  require("@/assets/images/cat-10.jpg"),
+  require("@/assets/images/cat-11.jpg"),
+  require("@/assets/images/cat-12.jpg"),
+  require("@/assets/images/cat-13.jpg"),
+  require("@/assets/images/cat-14.jpg"),
+  require("@/assets/images/cat-15.jpg"),
+  require("@/assets/images/cat-16.jpg"),
+  require("@/assets/images/cat-17.jpg"),
+  require("@/assets/images/cat-18.jpg"),
+  require("@/assets/images/cat-19.jpg"),
+  require("@/assets/images/cat-20.jpg"),
 ];
 
 const getRandomCatImage = () => {
@@ -49,8 +49,22 @@ export default function OutfitScreen() {
   const isDarkMode = colorScheme === "dark";
 
   // context
-  const occasions = ["Casual", "Formal", "Work", "Date", "Party"];
+  const occasions = [
+    "Conference",
+    "Daily Work",
+    "Dating",
+    "Party",
+    "Prom",
+    "School",
+    "Shopping",
+    "Sport",
+    "Travel",
+    "Wedding Guest",
+  ];
   const [occasion, setOccasion] = useState("Casual");
+  const outfitStyles = ["American", "Japanese", "Korean"];
+  const [outfitStyle, setOutfitStyle] = useState("Japanese");
+
   const [weather, setWeather] = useState("");
 
   // image
@@ -62,8 +76,11 @@ export default function OutfitScreen() {
     accessories: string;
     outfitImages: string[];
   } | null>(null);
-  
-  const [images, setImages] = useState<(string | number)[]>([catImages[0], catImages[2]]);
+
+  const [images, setImages] = useState<(string | number)[]>([
+    catImages[0],
+    catImages[2],
+  ]);
   const [showImages, setShowImages] = useState(false);
 
   const uploadImage = async () => {
@@ -97,6 +114,21 @@ export default function OutfitScreen() {
     );
   };
 
+  const showOutfitStylePicker = () => {
+    ActionSheetIOS.showActionSheetWithOptions(
+      {
+        options: [...outfitStyles, "Cancel"],
+        cancelButtonIndex: outfitStyles.length,
+        title: "Select Occasion",
+      },
+      (buttonIndex) => {
+        if (buttonIndex !== outfitStyles.length) {
+          setOutfitStyle(outfitStyles[buttonIndex]);
+        }
+      }
+    );
+  };
+
   const generateOutfit = () => {
     if (!image) {
       Alert.alert(
@@ -116,7 +148,7 @@ export default function OutfitScreen() {
         getRandomCatImage(),
         getRandomCatImage(),
         getRandomCatImage(),
-      ]
+      ],
     };
     setOutfit(newOutfit);
   };
@@ -143,7 +175,17 @@ export default function OutfitScreen() {
             <Ionicons
               name="chevron-down"
               size={20}
-              color={isDarkMode ? "#FFFFFF" : "#000000"}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.input, isDarkMode && styles.inputDark]}
+            onPress={showOutfitStylePicker}
+          >
+            <ThemedText>{outfitStyle}</ThemedText>
+            <Ionicons
+              name="chevron-down"
+              size={20}
             />
           </TouchableOpacity>
 
@@ -156,33 +198,54 @@ export default function OutfitScreen() {
           />
 
           <ThemedView style={styles.buttonContainer}>
-            <TouchableOpacity 
-              style={[styles.button, { borderColor: "#3e3e3e" }, styles.halfButton]} 
+            <TouchableOpacity
+              style={[
+                styles.button,
+                { borderColor: "#3e3e3e" },
+                styles.halfButton,
+              ]}
               onPress={uploadImage}
             >
-              <ThemedText style={[styles.buttonText, { color: buttonColor }]}>Upload Image</ThemedText>
+              <ThemedText style={[styles.buttonText, { color: buttonColor }]}>
+                Upload Image
+              </ThemedText>
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.button, { borderColor: "#3e3e3e" }, styles.halfButton]} 
+            <TouchableOpacity
+              style={[
+                styles.button,
+                { borderColor: "#3e3e3e" },
+                styles.halfButton,
+              ]}
               onPress={toggleImageSection}
             >
-              <ThemedText type="default" style={[styles.buttonText, { color: buttonColor }]}>
-                {images.length > 0 ? (showImages ? "Hide Images" : "Show Images") : "Upload Image"}
+              <ThemedText
+                type="default"
+                style={[styles.buttonText, { color: buttonColor }]}
+              >
+                {images.length > 0
+                  ? showImages
+                    ? "Hide Images"
+                    : "Show Images"
+                  : "Upload Image"}
               </ThemedText>
             </TouchableOpacity>
           </ThemedView>
 
           {showImages && images.length > 0 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.marginBottom}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.marginBottom}
+            >
               <ThemedView style={styles.imageContainer}>
                 {images.map((img, index) => (
                   <TouchableOpacity key={index} onPress={() => setImage(img)}>
-                    <Image 
-                      source={typeof img === 'string' ? { uri: img } : img} 
+                    <Image
+                      source={typeof img === "string" ? { uri: img } : img}
                       style={[
-                        styles.thumbnailImage, 
-                        img === image && styles.selectedThumbnail
-                      ]} 
+                        styles.thumbnailImage,
+                        img === image && styles.selectedThumbnail,
+                      ]}
                     />
                   </TouchableOpacity>
                 ))}
@@ -191,27 +254,45 @@ export default function OutfitScreen() {
           )}
 
           {image && (
-            <Image source={typeof image === 'string' ? { uri: image } : image} style={styles.selectedImage} />
+            <Image
+              source={typeof image === "string" ? { uri: image } : image}
+              style={styles.selectedImage}
+            />
           )}
 
           <TouchableOpacity
             style={[styles.button, { borderColor: buttonColor }]}
             onPress={generateOutfit}
           >
-            <ThemedText style={[styles.buttonText, { color: buttonColor }]}>Generate Outfit</ThemedText>
+            <ThemedText style={[styles.buttonText, { color: buttonColor }]}>
+              Generate Outfit
+            </ThemedText>
           </TouchableOpacity>
 
           {outfit && (
-            <ThemedView style={[styles.outfitContainer, isDarkMode && styles.outfitContainerDark]}>
+            <ThemedView
+              style={[
+                styles.outfitContainer,
+                isDarkMode && styles.outfitContainerDark,
+              ]}
+            >
               <ThemedText type="subtitle">Recommended Outfit:</ThemedText>
               <ThemedText>Top: {outfit.top}</ThemedText>
               <ThemedText>Bottom: {outfit.bottom}</ThemedText>
               <ThemedText>Shoes: {outfit.shoes}</ThemedText>
               <ThemedText>Accessories: {outfit.accessories}</ThemedText>
 
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.outfitImageContainer}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.outfitImageContainer}
+              >
                 {outfit.outfitImages?.map((img, index) => (
-                  <Image key={index} source={typeof img === 'string' ? { uri: img } : img} style={styles.outfitImage} />
+                  <Image
+                    key={index}
+                    source={typeof img === "string" ? { uri: img } : img}
+                    style={styles.outfitImage}
+                  />
                 ))}
               </ScrollView>
             </ThemedView>
@@ -254,7 +335,7 @@ const styles = StyleSheet.create({
   },
   button: {
     padding: 12,
-    alignItems: 'center',
+    alignItems: "center",
     borderRadius: 8,
     borderWidth: 1, // Added border width
   },
@@ -301,10 +382,10 @@ const styles = StyleSheet.create({
     borderColor: "#007AFF",
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 16,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   halfButton: {
     flex: 0.48,
