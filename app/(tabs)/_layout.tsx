@@ -56,6 +56,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="upload"
+        options={{
+          title: "Upload",
+          tabBarIcon: ({ focused }) => (
+            <TabBarIcon
+              name={focused ? "add-circle" : "add-circle-outline"}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="outfit"
         options={{
           title: "Outfit",
