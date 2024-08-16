@@ -26,11 +26,7 @@ const Card: React.FC<CardProps> = ({ title, iconName, items }) => {
     <ThemedView style={styles.cardContainer}>
       <ThemedView style={[styles.card, isDarkMode && styles.cardDark]}>
         <ThemedView style={styles.cardHeader}>
-          <Ionicons
-            name={iconName as any}
-            size={28}
-            style={styles.cardIcon}
-          />
+          <Ionicons name={iconName as any} size={28} style={styles.cardIcon} />
           <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
             {title}
           </ThemedText>
@@ -63,11 +59,15 @@ export default function HomeScreen() {
 
   const { getItems } = useItems();
   const [items, setItems] = useState<Item[]>([]);
-  
+
   useEffect(() => {
     const fetchItems = async () => {
-      const fetchedItems = await getItems();
-      setItems(fetchedItems);
+      try {
+        const fetchedItems = await getItems();
+        setItems(fetchedItems);
+      } catch (error) {
+        console.error("Error fetching items:", error);
+      }
     };
     fetchItems();
   }, []);
@@ -76,22 +76,22 @@ export default function HomeScreen() {
     {
       title: "Tops",
       iconName: "shirt-outline",
-      items: items
+      items: items.filter((item) => item.category.name === "top"),
     },
     {
       title: "Bottoms",
       iconName: "cut-outline",
-      items: items
+      items: items.filter((item) => item.category.name === "bottom"),
     },
     {
       title: "Shoes",
       iconName: "footsteps-outline",
-      items: items
+      items: items.filter((item) => item.category.name === "shoe"),
     },
     {
       title: "Bags",
       iconName: "bag-handle-outline",
-      items: items
+      items: items.filter((item) => item.category.name === "bag"),
     },
   ];
 

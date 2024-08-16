@@ -1,4 +1,5 @@
-const BASE_URL = 'https://smart-closet-backend.onrender.com/';
+// const BASE_URL = 'https://smart-closet-backend.onrender.com/';
+const BASE_URL = 'http://localhost:8000/';
 
 const api = {
     async get(url: string) {
