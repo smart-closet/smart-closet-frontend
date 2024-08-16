@@ -4,9 +4,8 @@ import React from "react";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { useThemeColor } from "@/hooks/useThemeColor";
-import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 
@@ -19,14 +18,9 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].text,
         headerShown: true,
         tabBarStyle: {
-          backgroundColor: useThemeColor(
-            {
-              light: Colors["light"].background,
-              dark: Colors["dark"].background,
-            },
-            "background"
-          ),
-          borderTopWidth: 0,
+          backgroundColor: Colors[colorScheme ?? "light"].background,
+          // borderTopWidth: 0,
+          height: 40
         },
         header: ({ navigation }) => (
           <ThemedView
@@ -36,13 +30,7 @@ export default function TabLayout() {
               alignItems: "center",
               paddingHorizontal: 16,
               paddingVertical: 12,
-              backgroundColor: useThemeColor(
-                {
-                  light: Colors["light"].background,
-                  dark: Colors["dark"].background,
-                },
-                "background"
-              ),
+              backgroundColor: Colors[colorScheme ?? "light"].background,
             }}
           >
             <ThemedText type="title" style={{fontSize: 20}}>My Closet</ThemedText>

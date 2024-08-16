@@ -86,7 +86,7 @@ export default function HomeScreen() {
     {
       title: "Shoes",
       iconName: "footsteps-outline",
-      items: items.filter((item) => item.category.name === "shoe"),
+      items: items.filter((item) => item.category.name === "shoes"),
     },
     {
       title: "Bags",
@@ -96,15 +96,20 @@ export default function HomeScreen() {
   ];
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      {categories.map((category, index) => (
-        <Card key={index} {...category} />
-      ))}
-    </ScrollView>
+    <ThemedView style={styles.container}>
+      <ScrollView>
+        {categories.map((category, index) => (
+          <Card key={index} {...category} />
+        ))}
+      </ScrollView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   cardContainer: {
     paddingHorizontal: 16,
     paddingBottom: 16,
