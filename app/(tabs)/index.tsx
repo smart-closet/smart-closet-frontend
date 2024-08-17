@@ -97,7 +97,7 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView>
+      <ScrollView showsVerticalScrollIndicator={false}>
         {categories.map((category, index) => (
           <Card key={index} {...category} />
         ))}

@@ -21,10 +21,11 @@ import useStorage  from "@/hooks/useStorage";
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
+  
   const [image, setImage] = useState<ImagePicker.ImagePickerAsset>();
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
-  const options = ["Clothing", "Electronics", "Furniture", "Other"];
+  const options = ["Top", "Bottom", "Bag", "Shoes", "Other"];
   const { createFile } = useStorage();
 
   useEffect(() => {
@@ -64,12 +65,17 @@ export default function HomeScreen() {
     setIsUploading(true);
 
     try {
-      // Ensure image.base64 is defined before creating a File
       if (image) {
-        await createFile({ file: image, category_id: 1 });
-        Alert.alert("Success", "Image uploaded successfully!");
+        await createFile({ file: image, category_id: options.indexOf(selectedOption) + 1 });
+        if (Platform.OS === "web") {
+          alert("Success! Image uploaded successfully!");
+        } else {
+          Alert.alert("Success", "Image uploaded successfully!");
+        }
+       
       } else {
         Alert.alert("Error", "Image data is not available.");
+        alert("Image data is not available.");
       }
       
       // setImage(undefined);
@@ -84,7 +90,7 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {image ? (
           <>
             <Image source={{ uri: image.uri }} style={styles.image} />
@@ -167,7 +173,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    marginTop: 16,
   },
   optionButton: {
     padding: 8,
@@ -184,7 +189,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 16,
   },
   uploadingButton: {
     opacity: 0.7,
