@@ -8,13 +8,14 @@ import {
   type StorageError,
 } from "firebase/storage";
 
-import { storage, auth } from "@/lib/storage";
+import firebaseInstance from "@/lib/storage";
 import { useItems } from "./useItems";
 import * as ImagePicker from "expo-image-picker";
 
 export default function useStorage() {
   const [progress, setProgess] = useState(0);
   const { createItem } = useItems();
+  const { storage, auth } = firebaseInstance();
 
   const createFile = async ({
     category_id,
