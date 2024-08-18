@@ -45,8 +45,8 @@ const Card: React.FC<CardProps> = ({ title, iconName, items }) => {
                 key={index}
                 onPress={() =>
                   router.push({
-                    pathname: "/image-detail",
-                    params: { item: encodeURIComponent(JSON.stringify(item)) },
+                    pathname: "/item-detail",
+                    params: { itemId: encodeURIComponent(JSON.stringify(item.id)) },
                   })
                 }
               >

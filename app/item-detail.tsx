@@ -1,16 +1,58 @@
-import React from "react";
-import { StyleSheet, Image, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
-import { Item } from "@/hooks/useItems";
+import { Item, useItems } from "@/hooks/useItems";
 
 const ImageDetailScreen = () => {
   const router = useRouter();
-  const { item } = useLocalSearchParams<{ item: string }>();
-  const parsedItem: Item = JSON.parse(decodeURIComponent(item));
+  const { itemId } = useLocalSearchParams<{ itemId: string }>();
+  const { getItem } = useItems();
+  const [item, setItem] = useState<Item | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        setLoading(true);
+        const fetchedItem = await getItem(parseInt(itemId, 10));
+        setItem(fetchedItem);
+      } catch (error) {
+        console.error("Error fetching item:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchItems();
+  }, [itemId]);
+
+  if (loading) {
+    return (
+      <ThemedView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#000000" />
+        <ThemedText style={styles.loadingText}>Loading...</ThemedText>
+      </ThemedView>
+    );
+  }
+
+  if (!item) {
+    return (
+      <ThemedView style={styles.errorContainer}>
+        <ThemedText style={styles.errorText}>
+          Failed to load item details.
+        </ThemedText>
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView style={styles.container}>
@@ -19,23 +61,20 @@ const ImageDetailScreen = () => {
         <ThemedText style={styles.backText}>Back</ThemedText>
       </TouchableOpacity>
 
-      
-      <Image source={{ uri: parsedItem.image_url }} style={styles.image} />
-      <ThemedText style={styles.title}>{parsedItem.name}</ThemedText>
+      <Image source={{ uri: item.image_url }} style={styles.image} />
+      <ThemedText style={styles.title}>{item.name}</ThemedText>
 
       <ThemedView style={styles.infoContainer}>
         <ThemedText style={styles.infoLabel}>Category</ThemedText>
-        <ThemedText style={styles.infoValue}>
-          {parsedItem.category.name}
-        </ThemedText>
+        <ThemedText style={styles.infoValue}>{item.category.name}</ThemedText>
       </ThemedView>
 
       <ThemedView style={styles.infoContainer}>
         <ThemedText style={styles.infoLabel}>Attributes</ThemedText>
-        {parsedItem.attributes && parsedItem.attributes.length > 0 && (
+        {item.attributes && item.attributes.length > 0 && (
           <ThemedView>
             <View style={styles.badgeContainer}>
-              {parsedItem.attributes.map((attribute, index) => (
+              {item.attributes.map((attribute, index) => (
                 <View key={index} style={styles.badge}>
                   <ThemedText style={styles.badgeText}>
                     {attribute.value}
@@ -55,6 +94,25 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     gap: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+  },
+  errorText: {
+    fontSize: 16,
+    textAlign: "center",
   },
   backButton: {
     flexDirection: "row",
