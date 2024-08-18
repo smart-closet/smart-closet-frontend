@@ -7,14 +7,14 @@ import {
   useColorScheme,
   ScrollView,
   Alert,
+  Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { ActionSheetIOS } from "react-native";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Ionicons } from "@expo/vector-icons";
 import { useItems } from "@/hooks/useItems";
+import { Picker } from "@react-native-picker/picker";
 
 export default function OutfitScreen() {
   // theme
@@ -69,6 +69,14 @@ export default function OutfitScreen() {
   }, []);
 
   const uploadImage = async () => {
+    let permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      Alert.alert("Permission to access camera roll is required!");
+      return;
+    }
+
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -82,36 +90,6 @@ export default function OutfitScreen() {
       setImage(newImage);
       setShowImages(true);
     }
-  };
-
-  const showOccasionPicker = () => {
-    ActionSheetIOS.showActionSheetWithOptions(
-      {
-        options: [...occasions, "Cancel"],
-        cancelButtonIndex: occasions.length,
-        title: "Select Occasion",
-      },
-      (buttonIndex) => {
-        if (buttonIndex !== occasions.length) {
-          setOccasion(occasions[buttonIndex]);
-        }
-      }
-    );
-  };
-
-  const showOutfitStylePicker = () => {
-    ActionSheetIOS.showActionSheetWithOptions(
-      {
-        options: [...outfitStyles, "Cancel"],
-        cancelButtonIndex: outfitStyles.length,
-        title: "Select Occasion",
-      },
-      (buttonIndex) => {
-        if (buttonIndex !== outfitStyles.length) {
-          setOutfitStyle(outfitStyles[buttonIndex]);
-        }
-      }
-    );
   };
 
   const getRandomImage = () => {
@@ -152,28 +130,33 @@ export default function OutfitScreen() {
     }
   };
 
-  const buttonColor = isDarkMode ? "#EDEDED" : "#007AFF";
+  const buttonColor = isDarkMode ? "#FFFFFF" : "#000000"; // 修改按鈕顏色為黑白
 
   return (
     <ThemedView style={{ flex: 1 }}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <ThemedView style={styles.cardContainer}>
           <ThemedView style={[styles.card, isDarkMode && styles.cardDark]}>
-            <TouchableOpacity
+            <Picker
+              dropdownIconColor={isDarkMode ? "#FFFFFF" : "#000000"}
+              selectedValue={occasion}
+              onValueChange={(itemValue) => setOccasion(itemValue)}
               style={[styles.input, isDarkMode && styles.inputDark]}
-              onPress={showOccasionPicker}
             >
-              <ThemedText>{occasion}</ThemedText>
-              <Ionicons name="chevron-down" size={20} />
-            </TouchableOpacity>
+              {occasions.map((occ) => (
+                <Picker.Item key={occ} label={occ} value={occ} />
+              ))}
+            </Picker>
 
-            <TouchableOpacity
+            <Picker
+              selectedValue={outfitStyle}
+              onValueChange={(itemValue) => setOutfitStyle(itemValue)}
               style={[styles.input, isDarkMode && styles.inputDark]}
-              onPress={showOutfitStylePicker}
             >
-              <ThemedText>{outfitStyle}</ThemedText>
-              <Ionicons name="chevron-down" size={20} />
-            </TouchableOpacity>
+              {outfitStyles.map((style) => (
+                <Picker.Item key={style} label={style} value={style} />
+              ))}
+            </Picker>
 
             <TextInput
               placeholder="Weather (e.g., sunny, rainy)"
@@ -235,7 +218,7 @@ export default function OutfitScreen() {
             )}
 
             <TouchableOpacity
-              style={[styles.button, { borderColor: buttonColor }]}
+              style={[styles.button, { borderColor: buttonColor }]} // 使用 buttonColor
               onPress={generateOutfit}
             >
               <ThemedText style={[styles.buttonText, { color: buttonColor }]}>
@@ -290,23 +273,6 @@ const styles = StyleSheet.create({
   },
   cardDark: {
     backgroundColor: "#1C1C1E",
-  },
-  input: {
-    marginBottom: 16,
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: "#FFFFFF",
-    color: "#000000",
-    borderWidth: 1,
-    borderColor: "#CCCCCC",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  inputDark: {
-    backgroundColor: "#333333",
-    color: "#FFFFFF",
-    borderColor: "#555555",
   },
   button: {
     padding: 12,
@@ -367,5 +333,21 @@ const styles = StyleSheet.create({
   },
   marginBottom: {
     marginBottom: 16,
+  },
+  input: {
+    marginBottom: 16,
+    padding: Platform.OS === "ios" ? 10 : 0,
+    borderRadius: 5,
+    backgroundColor: "#FFFFFF",
+    color: "#000000",
+    borderWidth: 1,
+    borderColor: "#CCCCCC",
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+  },
+  inputDark: {
+    backgroundColor: "#333333",
+    color: "#FFFFFF",
+    borderColor: "#555555",
   },
 });
