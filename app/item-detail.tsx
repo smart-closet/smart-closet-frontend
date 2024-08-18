@@ -13,7 +13,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { Item, useItems } from "@/hooks/useItems";
 
-const ImageDetailScreen = () => {
+const ItemDetailScreen = () => {
   const router = useRouter();
   const { itemId } = useLocalSearchParams<{ itemId: string }>();
   const { getItem } = useItems();
@@ -162,4 +162,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ImageDetailScreen;
+export default ItemDetailScreen;

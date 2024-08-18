@@ -68,30 +68,6 @@ export default function OutfitScreen() {
     fetchItems();
   }, []);
 
-  const uploadImage = async () => {
-    let permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (permissionResult.granted === false) {
-      Alert.alert("Permission to access camera roll is required!");
-      return;
-    }
-
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      const newImage = result.assets[0].uri;
-      setImages([...images, newImage]);
-      setImage(newImage);
-      setShowImages(true);
-    }
-  };
-
   const getRandomImage = () => {
     const randomIndex = Math.floor(Math.random() * images.length);
     const randomImage = images[randomIndex];
@@ -125,8 +101,6 @@ export default function OutfitScreen() {
   const toggleImageSection = () => {
     if (images.length > 0) {
       setShowImages(!showImages);
-    } else {
-      uploadImage();
     }
   };
 
@@ -179,11 +153,7 @@ export default function OutfitScreen() {
                   type="default"
                   style={[styles.buttonText, { color: buttonColor }]}
                 >
-                  {images.length > 0
-                    ? showImages
-                      ? "Hide Images"
-                      : "Show Images"
-                    : "Upload Image"}
+                  {showImages ? "Hide Images" : "Show Images"}
                 </ThemedText>
               </TouchableOpacity>
             </ThemedView>
