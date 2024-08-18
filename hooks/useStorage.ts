@@ -20,9 +20,11 @@ export default function useStorage() {
   const createFile = async ({
     category_id,
     file,
+    itemName,
   }: {
     category_id: number;
     file: ImagePicker.ImagePickerAsset;
+    itemName: string;
   }) => {
     const uriToBuffer = async (uri: string) => {
       const response = await fetch(uri);
@@ -33,7 +35,7 @@ export default function useStorage() {
 
     signInAnonymously(auth).then(async () => {
       // User is signed in anonymously
-      const storageRef = ref(storage, `items/${file.fileName}`);
+      const storageRef = ref(storage, `items/${itemName}`);
       const imageBuffer = await uriToBuffer(file.uri);
       const uploadTask = uploadBytesResumable(storageRef, imageBuffer, {
         contentType: file.mimeType,
@@ -52,7 +54,7 @@ export default function useStorage() {
             async (downloadURL: string) => {
               try {
                 const res = await createItem({
-                  name: `${file.fileName}`,
+                  name: itemName,
                   image_url: downloadURL,
                   category_id,
                 });

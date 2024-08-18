@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -9,22 +9,23 @@ import {
   Platform,
   Dimensions,
   Alert,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import useStorage  from "@/hooks/useStorage";
-
+import useStorage from "@/hooks/useStorage";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
-  
+
   const [image, setImage] = useState<ImagePicker.ImagePickerAsset>();
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const itemNameRef = useRef<any>(null);
   const options = ["Top", "Bottom", "Bag", "Shoes", "Other"];
   const { createFile } = useStorage();
 
@@ -34,7 +35,9 @@ export default function HomeScreen() {
         const { status } =
           await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== "granted") {
-          Alert.alert("Sorry, we need camera roll permissions to make this work!");
+          Alert.alert(
+            "Sorry, we need camera roll permissions to make this work!"
+          );
         }
       }
     })();
@@ -66,18 +69,21 @@ export default function HomeScreen() {
 
     try {
       if (image) {
-        await createFile({ file: image, category_id: options.indexOf(selectedOption) + 1 });
+        await createFile({
+          file: image,
+          category_id: options.indexOf(selectedOption) + 1,
+          itemName: `${itemNameRef.current.value}`,
+        });
         if (Platform.OS === "web") {
           alert("Success! Image uploaded successfully!");
         } else {
           Alert.alert("Success", "Image uploaded successfully!");
         }
-       
       } else {
         Alert.alert("Error", "Image data is not available.");
         alert("Image data is not available.");
       }
-      
+
       // setImage(undefined);
       // setSelectedOption("");
     } catch (error) {
@@ -90,11 +96,14 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
         {image ? (
           <>
             <Image source={{ uri: image.uri }} style={styles.image} />
-            <ThemedText type="subtitle" style={{ textAlign: 'left' }}>
+            <ThemedText type="subtitle" style={{ textAlign: "left" }}>
               What kind of item is this?
             </ThemedText>
             <View style={styles.optionsContainer}>
@@ -111,6 +120,16 @@ export default function HomeScreen() {
                 </TouchableOpacity>
               ))}
             </View>
+
+            <ThemedText type="subtitle" style={{ textAlign: "left" }}>
+              What name of item is this?
+            </ThemedText>
+            <TextInput
+              ref={itemNameRef} // 設定 ref
+              style={styles.input}
+              placeholder="Enter item name"
+              onChangeText={(e) => (itemNameRef.current.value = e)}
+            />
           </>
         ) : null}
 
@@ -124,8 +143,8 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         {image && (
-          <TouchableOpacity 
-            style={[styles.uploadButton, isUploading && styles.uploadingButton]} 
+          <TouchableOpacity
+            style={[styles.uploadButton, isUploading && styles.uploadingButton]}
             onPress={uploadImage}
             disabled={isUploading}
           >
@@ -170,32 +189,38 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   optionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
   },
   optionButton: {
     padding: 8,
     margin: 4,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
   },
   selectedOption: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
   },
   uploadButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     padding: 16,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   uploadingButton: {
     opacity: 0.7,
   },
   uploadButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
+  },
+  input: {
+    borderWidth: 1, // Added border width
+    borderColor: "#ccc", // Added border color
+    padding: 10, // Added padding
+    borderRadius: 8, // Added border radius
   },
 });
