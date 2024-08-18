@@ -11,6 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Item, useItems } from "@/hooks/useItems";
+import { useRouter } from "expo-router";
 
 interface CardProps {
   title: string;
@@ -20,6 +21,7 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ title, iconName, items }) => {
   const colorScheme = useColorScheme();
+  const router = useRouter();
   const isDarkMode = colorScheme === "dark";
 
   return (
@@ -39,7 +41,15 @@ const Card: React.FC<CardProps> = ({ title, iconName, items }) => {
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <ThemedView style={styles.imageContainer}>
             {items.map((item, index) => (
-              <TouchableOpacity key={index}>
+              <TouchableOpacity
+                key={index}
+                onPress={() =>
+                  router.push({
+                    pathname: "/image-detail",
+                    params: { item: encodeURIComponent(JSON.stringify(item)) },
+                  })
+                }
+              >
                 <Image
                   source={{ uri: item.image_url }}
                   style={styles.cardImage}
