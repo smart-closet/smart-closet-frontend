@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Image,
@@ -14,34 +14,7 @@ import { ActionSheetIOS } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Ionicons } from "@expo/vector-icons";
-
-const catImages = [
-  require("@/assets/images/cat-1.jpg"),
-  require("@/assets/images/cat-2.jpg"),
-  require("@/assets/images/cat-3.jpg"),
-  require("@/assets/images/cat-4.jpg"),
-  require("@/assets/images/cat-5.jpg"),
-  require("@/assets/images/cat-6.jpg"),
-  require("@/assets/images/cat-7.jpg"),
-  require("@/assets/images/cat-8.jpg"),
-  require("@/assets/images/cat-9.jpg"),
-  require("@/assets/images/cat-10.jpg"),
-  require("@/assets/images/cat-11.jpg"),
-  require("@/assets/images/cat-12.jpg"),
-  require("@/assets/images/cat-13.jpg"),
-  require("@/assets/images/cat-14.jpg"),
-  require("@/assets/images/cat-15.jpg"),
-  require("@/assets/images/cat-16.jpg"),
-  require("@/assets/images/cat-17.jpg"),
-  require("@/assets/images/cat-18.jpg"),
-  require("@/assets/images/cat-19.jpg"),
-  require("@/assets/images/cat-20.jpg"),
-];
-
-const getRandomCatImage = () => {
-  const index = Math.floor(Math.random() * catImages.length);
-  return catImages[index];
-};
+import { useItems } from "@/hooks/useItems";
 
 export default function OutfitScreen() {
   // theme
@@ -68,7 +41,7 @@ export default function OutfitScreen() {
   const [weather, setWeather] = useState("");
 
   // image
-  const [image, setImage] = useState<string | number | null>(null);
+  const [image, setImage] = useState<string | null>(null);
   const [outfit, setOutfit] = useState<{
     top: string;
     bottom: string;
@@ -77,11 +50,23 @@ export default function OutfitScreen() {
     outfitImages: string[];
   } | null>(null);
 
-  const [images, setImages] = useState<(string | number)[]>([
-    catImages[0],
-    catImages[2],
-  ]);
+  const [images, setImages] = useState<string[]>([]);
   const [showImages, setShowImages] = useState(false);
+
+  const { getItems } = useItems();
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const fetchedItems = await getItems();
+        if (fetchedItems) {
+          setImages(fetchedItems.map((item) => item.image_url));
+        }
+      } catch (error) {
+        console.error("Error fetching items:", error);
+      }
+    };
+    fetchItems();
+  }, []);
 
   const uploadImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -129,6 +114,12 @@ export default function OutfitScreen() {
     );
   };
 
+  const getRandomImage = () => {
+    const randomIndex = Math.floor(Math.random() * images.length);
+    const randomImage = images[randomIndex];
+    return randomImage;
+  };
+
   const generateOutfit = () => {
     if (!image) {
       Alert.alert(
@@ -145,9 +136,9 @@ export default function OutfitScreen() {
       accessories: "Baseball cap",
       outfitImages: [
         image,
-        getRandomCatImage(),
-        getRandomCatImage(),
-        getRandomCatImage(),
+        getRandomImage(),
+        getRandomImage(),
+        getRandomImage(),
       ],
     };
     setOutfit(newOutfit);
@@ -164,142 +155,126 @@ export default function OutfitScreen() {
   const buttonColor = isDarkMode ? "#EDEDED" : "#007AFF";
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <ThemedView style={styles.cardContainer}>
-        <ThemedView style={[styles.card, isDarkMode && styles.cardDark]}>
-          <TouchableOpacity
-            style={[styles.input, isDarkMode && styles.inputDark]}
-            onPress={showOccasionPicker}
-          >
-            <ThemedText>{occasion}</ThemedText>
-            <Ionicons
-              name="chevron-down"
-              size={20}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.input, isDarkMode && styles.inputDark]}
-            onPress={showOutfitStylePicker}
-          >
-            <ThemedText>{outfitStyle}</ThemedText>
-            <Ionicons
-              name="chevron-down"
-              size={20}
-            />
-          </TouchableOpacity>
-
-          <TextInput
-            placeholder="Weather (e.g., sunny, rainy)"
-            value={weather}
-            onChangeText={setWeather}
-            style={[styles.input, isDarkMode && styles.inputDark]}
-            placeholderTextColor={isDarkMode ? "#999999" : "#666666"}
-          />
-
-          <ThemedView style={styles.buttonContainer}>
+    <ThemedView style={{ flex: 1 }}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <ThemedView style={styles.cardContainer}>
+          <ThemedView style={[styles.card, isDarkMode && styles.cardDark]}>
             <TouchableOpacity
-              style={[
-                styles.button,
-                { borderColor: "#3e3e3e" },
-                styles.halfButton,
-              ]}
-              onPress={uploadImage}
+              style={[styles.input, isDarkMode && styles.inputDark]}
+              onPress={showOccasionPicker}
             >
-              <ThemedText style={[styles.buttonText, { color: buttonColor }]}>
-                Upload Image
-              </ThemedText>
+              <ThemedText>{occasion}</ThemedText>
+              <Ionicons name="chevron-down" size={20} />
             </TouchableOpacity>
+
             <TouchableOpacity
-              style={[
-                styles.button,
-                { borderColor: "#3e3e3e" },
-                styles.halfButton,
-              ]}
-              onPress={toggleImageSection}
+              style={[styles.input, isDarkMode && styles.inputDark]}
+              onPress={showOutfitStylePicker}
             >
-              <ThemedText
-                type="default"
-                style={[styles.buttonText, { color: buttonColor }]}
+              <ThemedText>{outfitStyle}</ThemedText>
+              <Ionicons name="chevron-down" size={20} />
+            </TouchableOpacity>
+
+            <TextInput
+              placeholder="Weather (e.g., sunny, rainy)"
+              value={weather}
+              onChangeText={setWeather}
+              style={[styles.input, isDarkMode && styles.inputDark]}
+              placeholderTextColor={isDarkMode ? "#999999" : "#666666"}
+            />
+
+            <ThemedView style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  { borderColor: "#3e3e3e" },
+                  styles.halfButton,
+                ]}
+                onPress={toggleImageSection}
               >
-                {images.length > 0
-                  ? showImages
-                    ? "Hide Images"
-                    : "Show Images"
-                  : "Upload Image"}
-              </ThemedText>
-            </TouchableOpacity>
-          </ThemedView>
+                <ThemedText
+                  type="default"
+                  style={[styles.buttonText, { color: buttonColor }]}
+                >
+                  {images.length > 0
+                    ? showImages
+                      ? "Hide Images"
+                      : "Show Images"
+                    : "Upload Image"}
+                </ThemedText>
+              </TouchableOpacity>
+            </ThemedView>
 
-          {showImages && images.length > 0 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.marginBottom}
-            >
-              <ThemedView style={styles.imageContainer}>
-                {images.map((img, index) => (
-                  <TouchableOpacity key={index} onPress={() => setImage(img)}>
-                    <Image
-                      source={typeof img === "string" ? { uri: img } : img}
-                      style={[
-                        styles.thumbnailImage,
-                        img === image && styles.selectedThumbnail,
-                      ]}
-                    />
-                  </TouchableOpacity>
-                ))}
-              </ThemedView>
-            </ScrollView>
-          )}
-
-          {image && (
-            <Image
-              source={typeof image === "string" ? { uri: image } : image}
-              style={styles.selectedImage}
-            />
-          )}
-
-          <TouchableOpacity
-            style={[styles.button, { borderColor: buttonColor }]}
-            onPress={generateOutfit}
-          >
-            <ThemedText style={[styles.buttonText, { color: buttonColor }]}>
-              Generate Outfit
-            </ThemedText>
-          </TouchableOpacity>
-
-          {outfit && (
-            <ThemedView
-              style={[
-                styles.outfitContainer,
-                isDarkMode && styles.outfitContainerDark,
-              ]}
-            >
-              <ThemedText type="subtitle">Recommended Outfit:</ThemedText>
-              <ThemedText>Top: {outfit.top}</ThemedText>
-              <ThemedText>Bottom: {outfit.bottom}</ThemedText>
-              <ThemedText>Shoes: {outfit.shoes}</ThemedText>
-              <ThemedText>Accessories: {outfit.accessories}</ThemedText>
-
+            {showImages && images.length > 0 && (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                style={styles.outfitImageContainer}
+                style={styles.marginBottom}
               >
-                {outfit.outfitImages?.map((img, index) => (
-                  <Image
-                    key={index}
-                    source={typeof img === "string" ? { uri: img } : img}
-                    style={styles.outfitImage}
-                  />
-                ))}
+                <ThemedView style={styles.imageContainer}>
+                  {images.map((img, index) => (
+                    <TouchableOpacity key={index} onPress={() => setImage(img)}>
+                      <Image
+                        source={typeof img === "string" ? { uri: img } : img}
+                        style={[
+                          styles.thumbnailImage,
+                          img === image && styles.selectedThumbnail,
+                        ]}
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </ThemedView>
               </ScrollView>
-            </ThemedView>
-          )}
+            )}
+
+            {image && (
+              <Image
+                source={typeof image === "string" ? { uri: image } : image}
+                style={styles.selectedImage}
+              />
+            )}
+
+            <TouchableOpacity
+              style={[styles.button, { borderColor: buttonColor }]}
+              onPress={generateOutfit}
+            >
+              <ThemedText style={[styles.buttonText, { color: buttonColor }]}>
+                Generate Outfit
+              </ThemedText>
+            </TouchableOpacity>
+
+            {outfit && (
+              <ThemedView
+                style={[
+                  styles.outfitContainer,
+                  isDarkMode && styles.outfitContainerDark,
+                ]}
+              >
+                <ThemedText type="subtitle">Recommended Outfit:</ThemedText>
+                <ThemedText>Top: {outfit.top}</ThemedText>
+                <ThemedText>Bottom: {outfit.bottom}</ThemedText>
+                <ThemedText>Shoes: {outfit.shoes}</ThemedText>
+                <ThemedText>Accessories: {outfit.accessories}</ThemedText>
+
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.outfitImageContainer}
+                >
+                  {outfit.outfitImages?.map((img, index) => (
+                    <Image
+                      key={index}
+                      source={typeof img === "string" ? { uri: img } : img}
+                      style={styles.outfitImage}
+                    />
+                  ))}
+                </ScrollView>
+              </ThemedView>
+            )}
+          </ThemedView>
         </ThemedView>
-      </ThemedView>
-    </ScrollView>
+      </ScrollView>
+    </ThemedView>
   );
 }
 
@@ -388,7 +363,7 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   halfButton: {
-    flex: 0.48,
+    flex: 1,
   },
   marginBottom: {
     marginBottom: 16,

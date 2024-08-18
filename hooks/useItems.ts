@@ -4,7 +4,7 @@ import { api } from "./api";
 export interface Item {
   id: number;
   name: string;
-  image_url?: string;
+  image_url: string;
   attributes?: Attribute[];
   category_id: number;
   category: Category;
