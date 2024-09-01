@@ -21,6 +21,20 @@ interface Category {
   name: string;
 }
 
+interface OutfitPair {
+  top: Item;
+  bottom: Item;
+  score: number;
+}
+
+interface OutfitSuggestionParams {
+  city: string;
+  place: string;
+  consider_weather: boolean;
+  user_occation: string;
+  personal_temp: number;
+}
+
 // Define return types for the CRUD operations
 interface UseItemsReturn {
   getItems: () => Promise<Item[]>;
@@ -28,6 +42,7 @@ interface UseItemsReturn {
   createItem: (item: Omit<Omit<Item, 'category'>, 'id'>) => Promise<Item>;
   updateItem: (id: number, item: Item) => Promise<Item>;
   deleteItem: (id: number) => Promise<void>;
+  getOutfitSuggestions: (params: OutfitSuggestionParams) => Promise<OutfitPair[]>;
 }
 
 // Custom hook to handle item CRUD operations
@@ -53,5 +68,9 @@ export const useItems = (): UseItemsReturn => {
     return await api.delete(`items/${id}`);
   };
 
-  return { getItems, getItem, createItem, updateItem, deleteItem };
+  const getOutfitSuggestions = async (params: OutfitSuggestionParams): Promise<OutfitPair[]> => {
+    return await api.post(`rulebase/`, params);
+  };
+
+  return { getItems, getItem, createItem, updateItem, deleteItem, getOutfitSuggestions };
 };

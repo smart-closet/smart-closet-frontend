@@ -201,10 +201,10 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
   },
   selectedOption: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#efefef",
   },
   uploadButton: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#000000",
     padding: 16,
     borderRadius: 12,
     alignItems: "center",

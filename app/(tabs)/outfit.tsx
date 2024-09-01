@@ -8,13 +8,22 @@ import {
   ScrollView,
   Alert,
   Platform,
+  View,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from '@expo/vector-icons';
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useItems } from "@/hooks/useItems";
 import { Picker } from "@react-native-picker/picker";
+
+interface OutfitSuggestion {
+  top: string;
+  bottom: string;
+  outfitImages: string[];
+  score: number;
+}
 
 export default function OutfitScreen() {
   // theme
@@ -23,8 +32,7 @@ export default function OutfitScreen() {
 
   // context
   const occasions = [
-    "Conference",
-    "Daily Work",
+    "Daily_Work_and_Conference",
     "Dating",
     "Party",
     "Prom",
@@ -34,7 +42,7 @@ export default function OutfitScreen() {
     "Travel",
     "Wedding Guest",
   ];
-  const [occasion, setOccasion] = useState("Casual");
+  const [occasion, setOccasion] = useState("Daily_Work_and_Conference");
   const outfitStyles = ["American", "Japanese", "Korean"];
   const [outfitStyle, setOutfitStyle] = useState("Japanese");
 
@@ -42,18 +50,12 @@ export default function OutfitScreen() {
 
   // image
   const [image, setImage] = useState<string | null>(null);
-  const [outfit, setOutfit] = useState<{
-    top: string;
-    bottom: string;
-    shoes: string;
-    accessories: string;
-    outfitImages: string[];
-  } | null>(null);
+  const [outfitSuggestions, setOutfitSuggestions] = useState<OutfitSuggestion[]>([]);
 
   const [images, setImages] = useState<string[]>([]);
   const [showImages, setShowImages] = useState(false);
 
-  const { getItems } = useItems();
+  const { getItems, getOutfitSuggestions } = useItems();
   useEffect(() => {
     const fetchItems = async () => {
       try {
@@ -74,28 +76,48 @@ export default function OutfitScreen() {
     return randomImage;
   };
 
-  const generateOutfit = () => {
-    if (!image) {
-      Alert.alert(
-        "No Image",
-        "Please upload an image before generating an outfit.",
-        [{ text: "OK", onPress: () => console.log("Alert closed") }]
-      );
-      return;
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+
+  const generateOutfit = async () => {
+    try {
+      const suggestions = await getOutfitSuggestions({
+        city: "Taipei",
+        place: "Zhongzheng District",
+        consider_weather: true,
+        user_occation: occasion,
+        personal_temp: 0,
+      });
+
+      console.log("Suggestions:", suggestions);
+
+      if (suggestions.length > 0) {
+        let filteredSuggestions = suggestions;
+        
+        // Only filter if an item is selected
+        if (selectedItem) {
+          filteredSuggestions = suggestions.filter(suggestion => 
+            suggestion.top.image_url === selectedItem || suggestion.bottom.image_url === selectedItem
+          );
+        }
+
+        const topFiveSuggestions = filteredSuggestions.slice(0, 5).map(suggestion => ({
+          top: suggestion.top.name,
+          bottom: suggestion.bottom.name,
+          outfitImages: [suggestion.top.image_url, suggestion.bottom.image_url],
+          score: suggestion.score
+        }));
+        setOutfitSuggestions(topFiveSuggestions);
+
+        if (topFiveSuggestions.length === 0) {
+          Alert.alert("No Suggestions", "Unable to generate outfit suggestions for the selected item.");
+        }
+      } else {
+        Alert.alert("No Suggestions", "Unable to generate outfit suggestions for the current conditions.");
+      }
+    } catch (error) {
+      console.error("Error generating outfit:", error);
+      Alert.alert("Error", "An error occurred while generating the outfit. Please try again later.");
     }
-    const newOutfit = {
-      top: "White T-shirt",
-      bottom: "Jeans",
-      shoes: "Sneakers",
-      accessories: "Baseball cap",
-      outfitImages: [
-        image,
-        getRandomImage(),
-        getRandomImage(),
-        getRandomImage(),
-      ],
-    };
-    setOutfit(newOutfit);
   };
 
   const toggleImageSection = () => {
@@ -153,7 +175,7 @@ export default function OutfitScreen() {
                   type="default"
                   style={[styles.buttonText, { color: buttonColor }]}
                 >
-                  {showImages ? "Hide Images" : "Show Images"}
+                  {showImages ? "Hide Items" : "Select Item (Optional)"}
                 </ThemedText>
               </TouchableOpacity>
             </ThemedView>
@@ -166,12 +188,15 @@ export default function OutfitScreen() {
               >
                 <ThemedView style={styles.imageContainer}>
                   {images.map((img, index) => (
-                    <TouchableOpacity key={index} onPress={() => setImage(img)}>
+                    <TouchableOpacity 
+                      key={index} 
+                      onPress={() => setSelectedItem(img === selectedItem ? null : img)}
+                    >
                       <Image
-                        source={typeof img === "string" ? { uri: img } : img}
+                        source={{ uri: img }}
                         style={[
                           styles.thumbnailImage,
-                          img === image && styles.selectedThumbnail,
+                          img === selectedItem && styles.selectedThumbnail,
                         ]}
                       />
                     </TouchableOpacity>
@@ -180,15 +205,23 @@ export default function OutfitScreen() {
               </ScrollView>
             )}
 
-            {image && (
-              <Image
-                source={typeof image === "string" ? { uri: image } : image}
-                style={styles.selectedImage}
-              />
+            {selectedItem && (
+              <ThemedView style={styles.selectedImageContainer}>
+                <Image
+                  source={{ uri: selectedItem }}
+                  style={styles.selectedImage}
+                />
+                <TouchableOpacity 
+                  style={styles.clearButton}
+                  onPress={() => setSelectedItem(null)}
+                >
+                  <Ionicons name="close-circle" size={30} color={isDarkMode ? "#FFFFFF" : "#000000"} />
+                </TouchableOpacity>
+              </ThemedView>
             )}
 
             <TouchableOpacity
-              style={[styles.button, { borderColor: buttonColor }]} // 使用 buttonColor
+              style={[styles.button, { borderColor: buttonColor }]}
               onPress={generateOutfit}
             >
               <ThemedText style={[styles.buttonText, { color: buttonColor }]}>
@@ -196,32 +229,40 @@ export default function OutfitScreen() {
               </ThemedText>
             </TouchableOpacity>
 
-            {outfit && (
+            {outfitSuggestions.length > 0 && (
               <ThemedView
                 style={[
                   styles.outfitContainer,
                   isDarkMode && styles.outfitContainerDark,
                 ]}
               >
-                <ThemedText type="subtitle">Recommended Outfit:</ThemedText>
-                <ThemedText>Top: {outfit.top}</ThemedText>
-                <ThemedText>Bottom: {outfit.bottom}</ThemedText>
-                <ThemedText>Shoes: {outfit.shoes}</ThemedText>
-                <ThemedText>Accessories: {outfit.accessories}</ThemedText>
-
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.outfitImageContainer}
-                >
-                  {outfit.outfitImages?.map((img, index) => (
-                    <Image
-                      key={index}
-                      source={typeof img === "string" ? { uri: img } : img}
-                      style={styles.outfitImage}
-                    />
-                  ))}
-                </ScrollView>
+                {outfitSuggestions.map((suggestion, index) => (
+                  <ThemedView key={index} style={styles.suggestionItem}>
+                    <ThemedView style={styles.suggestionHeader}>
+                      <ThemedText style={styles.outfitNumber}>Outfit {index + 1}</ThemedText>
+                      <ThemedView style={styles.scoreContainer}>
+                        <Ionicons name="star" size={12} color="#FFD700" />
+                        <ThemedText style={styles.scoreText}>{(suggestion.score * 100).toFixed(0)}</ThemedText>
+                      </ThemedView>
+                    </ThemedView>
+                    <ThemedView style={styles.outfitDetails}>
+                      <ThemedView style={styles.outfitItemContainer}>
+                        <Image
+                          source={{ uri: suggestion.outfitImages[0] }}
+                          style={styles.outfitImage}
+                        />
+                        <ThemedText style={styles.itemName}>{suggestion.top}</ThemedText>
+                      </ThemedView>
+                      <ThemedView style={styles.outfitItemContainer}>
+                        <Image
+                          source={{ uri: suggestion.outfitImages[1] }}
+                          style={styles.outfitImage}
+                        />
+                        <ThemedText style={styles.itemName}>{suggestion.bottom}</ThemedText>
+                      </ThemedView>
+                    </ThemedView>
+                  </ThemedView>
+                ))}
               </ThemedView>
             )}
           </ThemedView>
@@ -319,5 +360,64 @@ const styles = StyleSheet.create({
     backgroundColor: "#333333",
     color: "#FFFFFF",
     borderColor: "#555555",
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  suggestionItem: {
+    marginBottom: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#CCCCCC',
+    paddingBottom: 16,
+  },
+  suggestionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  outfitNumber: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  scoreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: "space-between",
+    backgroundColor: '#F0F0F0',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  scoreText: {
+    marginLeft: 4,
+    fontWeight: 'bold',
+    fontSize: 12
+  },
+  outfitDetails: {
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  },
+  outfitItemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  itemName: {
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  selectedImageContainer: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  clearButton: {
+    position: 'absolute',
+    top: -12,
+    right: -12,
+    borderRadius: 15,
+    padding: 5,
   },
 });
