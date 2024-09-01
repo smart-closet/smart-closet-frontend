@@ -32,7 +32,6 @@ interface OutfitSuggestionParams {
   place: string;
   consider_weather: boolean;
   user_occation: string;
-  personal_temp: number;
 }
 
 // Define return types for the CRUD operations

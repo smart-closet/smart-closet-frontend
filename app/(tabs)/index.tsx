@@ -93,16 +93,6 @@ export default function HomeScreen() {
       iconName: "cut-outline",
       items: items.filter((item) => item.category.name === "bottom"),
     },
-    {
-      title: "Shoes",
-      iconName: "footsteps-outline",
-      items: items.filter((item) => item.category.name === "shoes"),
-    },
-    {
-      title: "Bags",
-      iconName: "bag-handle-outline",
-      items: items.filter((item) => item.category.name === "bag"),
-    },
   ];
 
   return (

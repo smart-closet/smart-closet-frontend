@@ -10,7 +10,6 @@ import {
   Platform,
   View,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from '@expo/vector-icons';
 
 import { ThemedText } from "@/components/ThemedText";
@@ -32,19 +31,19 @@ export default function OutfitScreen() {
 
   // context
   const occasions = [
-    "Daily_Work_and_Conference",
     "Dating",
-    "Party",
-    "Prom",
-    "School",
-    "Shopping",
-    "Sport",
+    "Daily_Work_and_Conference",
     "Travel",
-    "Wedding Guest",
+    "Sports",
+    "Prom",
+    "Party",
+    "Shopping",
+    "School",
+    "Wedding_Guest",
   ];
   const [occasion, setOccasion] = useState("Daily_Work_and_Conference");
-  const outfitStyles = ["American", "Japanese", "Korean"];
-  const [outfitStyle, setOutfitStyle] = useState("Japanese");
+  // const outfitStyles = ["American", "Japanese", "Korean"];
+  // const [outfitStyle, setOutfitStyle] = useState("Japanese");
 
   const [weather, setWeather] = useState("");
 
@@ -81,11 +80,10 @@ export default function OutfitScreen() {
   const generateOutfit = async () => {
     try {
       const suggestions = await getOutfitSuggestions({
-        city: "Taipei",
-        place: "Zhongzheng District",
+        city: "臺北市",
+        place: "中正區",
         consider_weather: true,
         user_occation: occasion,
-        personal_temp: 0,
       });
 
       console.log("Suggestions:", suggestions);
@@ -109,14 +107,14 @@ export default function OutfitScreen() {
         setOutfitSuggestions(topFiveSuggestions);
 
         if (topFiveSuggestions.length === 0) {
-          Alert.alert("No Suggestions", "Unable to generate outfit suggestions for the selected item.");
+          setOutfitSuggestions([{ top: "", bottom: "", outfitImages: [], score: 0 }]);
         }
       } else {
-        Alert.alert("No Suggestions", "Unable to generate outfit suggestions for the current conditions.");
+        setOutfitSuggestions([{ top: "", bottom: "", outfitImages: [], score: 0 }]);
       }
     } catch (error) {
       console.error("Error generating outfit:", error);
-      Alert.alert("Error", "An error occurred while generating the outfit. Please try again later.");
+      setOutfitSuggestions([{ top: "", bottom: "", outfitImages: [], score: 0 }]);
     }
   };
 
@@ -144,7 +142,7 @@ export default function OutfitScreen() {
               ))}
             </Picker>
 
-            <Picker
+            {/* <Picker
               selectedValue={outfitStyle}
               onValueChange={(itemValue) => setOutfitStyle(itemValue)}
               style={[styles.input, isDarkMode && styles.inputDark]}
@@ -152,7 +150,7 @@ export default function OutfitScreen() {
               {outfitStyles.map((style) => (
                 <Picker.Item key={style} label={style} value={style} />
               ))}
-            </Picker>
+            </Picker> */}
 
             <TextInput
               placeholder="Weather (e.g., sunny, rainy)"
@@ -166,7 +164,7 @@ export default function OutfitScreen() {
               <TouchableOpacity
                 style={[
                   styles.button,
-                  { borderColor: "#3e3e3e" },
+                  { borderColor: buttonColor },
                   styles.halfButton,
                 ]}
                 onPress={toggleImageSection}
@@ -236,33 +234,37 @@ export default function OutfitScreen() {
                   isDarkMode && styles.outfitContainerDark,
                 ]}
               >
-                {outfitSuggestions.map((suggestion, index) => (
-                  <ThemedView key={index} style={styles.suggestionItem}>
-                    <ThemedView style={styles.suggestionHeader}>
-                      <ThemedText style={styles.outfitNumber}>Outfit {index + 1}</ThemedText>
-                      <ThemedView style={styles.scoreContainer}>
-                        <Ionicons name="star" size={12} color="#FFD700" />
-                        <ThemedText style={styles.scoreText}>{(suggestion.score * 100).toFixed(0)}</ThemedText>
+                {outfitSuggestions[0].top === "" && outfitSuggestions[0].bottom === "" ? (
+                  <ThemedText style={styles.noSuggestionsText}>Try get more cloth</ThemedText>
+                ) : (
+                  outfitSuggestions.map((suggestion, index) => (
+                    <ThemedView key={index} style={styles.suggestionItem}>
+                      <ThemedView style={styles.suggestionHeader}>
+                        <ThemedText style={styles.outfitNumber}>Outfit {index + 1}</ThemedText>
+                        <ThemedView style={styles.scoreContainer}>
+                          <Ionicons name="star" size={12} color="#FFD700" />
+                          <ThemedText style={styles.scoreText}>{(suggestion.score * 100).toFixed(0)}</ThemedText>
+                        </ThemedView>
+                      </ThemedView>
+                      <ThemedView style={styles.outfitDetails}>
+                        <ThemedView style={styles.outfitItemContainer}>
+                          <Image
+                            source={{ uri: suggestion.outfitImages[0] }}
+                            style={styles.outfitImage}
+                          />
+                          <ThemedText style={styles.itemName}>{suggestion.top}</ThemedText>
+                        </ThemedView>
+                        <ThemedView style={styles.outfitItemContainer}>
+                          <Image
+                            source={{ uri: suggestion.outfitImages[1] }}
+                            style={styles.outfitImage}
+                          />
+                          <ThemedText style={styles.itemName}>{suggestion.bottom}</ThemedText>
+                        </ThemedView>
                       </ThemedView>
                     </ThemedView>
-                    <ThemedView style={styles.outfitDetails}>
-                      <ThemedView style={styles.outfitItemContainer}>
-                        <Image
-                          source={{ uri: suggestion.outfitImages[0] }}
-                          style={styles.outfitImage}
-                        />
-                        <ThemedText style={styles.itemName}>{suggestion.top}</ThemedText>
-                      </ThemedView>
-                      <ThemedView style={styles.outfitItemContainer}>
-                        <Image
-                          source={{ uri: suggestion.outfitImages[1] }}
-                          style={styles.outfitImage}
-                        />
-                        <ThemedText style={styles.itemName}>{suggestion.bottom}</ThemedText>
-                      </ThemedView>
-                    </ThemedView>
-                  </ThemedView>
-                ))}
+                  ))
+                )}
               </ThemedView>
             )}
           </ThemedView>
@@ -278,12 +280,12 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   card: {
-    backgroundColor: "#F0F0F5",
+    backgroundColor: "transparent", // 移除灰色背景
     borderRadius: 12,
     padding: 16,
   },
   cardDark: {
-    backgroundColor: "#1C1C1E",
+    backgroundColor: "transparent", // 移除灰色背景
   },
   button: {
     padding: 12,
@@ -419,5 +421,9 @@ const styles = StyleSheet.create({
     right: -12,
     borderRadius: 15,
     padding: 5,
+  },
+  noSuggestionsText: {
+    textAlign: 'center',
+    fontSize: 16,
   },
 });
