@@ -6,11 +6,11 @@ import {
   TextInput,
   useColorScheme,
   ScrollView,
-  Alert,
   Platform,
-  View,
+  ActivityIndicator,
 } from "react-native";
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
+import * as Location from "expo-location";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -48,13 +48,34 @@ export default function OutfitScreen() {
   const [weather, setWeather] = useState("");
 
   // image
-  const [image, setImage] = useState<string | null>(null);
-  const [outfitSuggestions, setOutfitSuggestions] = useState<OutfitSuggestion[]>([]);
-
+  const [outfitSuggestions, setOutfitSuggestions] = useState<
+    OutfitSuggestion[]
+  >([]);
   const [images, setImages] = useState<string[]>([]);
   const [showImages, setShowImages] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const { getItems, getOutfitSuggestions } = useItems();
+
+  const [location, setLocation] = useState<Location.LocationObject | null>(
+    null
+  );
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("未獲得位置權限");
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
+
   useEffect(() => {
     const fetchItems = async () => {
       try {
@@ -69,52 +90,65 @@ export default function OutfitScreen() {
     fetchItems();
   }, []);
 
-  const getRandomImage = () => {
-    const randomIndex = Math.floor(Math.random() * images.length);
-    const randomImage = images[randomIndex];
-    return randomImage;
-  };
-
-  const [selectedItem, setSelectedItem] = useState<string | null>(null);
-
   const generateOutfit = async () => {
     try {
+      setLoading(true);
+      setOutfitSuggestions([]);
+
+      let latitude = location?.coords.latitude;
+      let longitude = location?.coords.longitude;
+
       const suggestions = await getOutfitSuggestions({
-        city: "臺北市",
-        place: "中正區",
         consider_weather: true,
         user_occation: occasion,
+        latitude: latitude ?? 0,
+        longitude: longitude ?? 0,
       });
 
       console.log("Suggestions:", suggestions);
 
       if (suggestions.length > 0) {
         let filteredSuggestions = suggestions;
-        
+
         // Only filter if an item is selected
         if (selectedItem) {
-          filteredSuggestions = suggestions.filter(suggestion => 
-            suggestion.top.image_url === selectedItem || suggestion.bottom.image_url === selectedItem
+          filteredSuggestions = suggestions.filter(
+            (suggestion) =>
+              suggestion.top.image_url === selectedItem ||
+              suggestion.bottom.image_url === selectedItem
           );
         }
 
-        const topFiveSuggestions = filteredSuggestions.slice(0, 5).map(suggestion => ({
-          top: suggestion.top.name,
-          bottom: suggestion.bottom.name,
-          outfitImages: [suggestion.top.image_url, suggestion.bottom.image_url],
-          score: suggestion.score
-        }));
+        const topFiveSuggestions = filteredSuggestions
+          .slice(0, 5)
+          .map((suggestion) => ({
+            top: suggestion.top.name,
+            bottom: suggestion.bottom.name,
+            outfitImages: [
+              suggestion.top.image_url,
+              suggestion.bottom.image_url,
+            ],
+            score: suggestion.score,
+          }));
         setOutfitSuggestions(topFiveSuggestions);
 
         if (topFiveSuggestions.length === 0) {
-          setOutfitSuggestions([{ top: "", bottom: "", outfitImages: [], score: 0 }]);
+          setOutfitSuggestions([
+            { top: "", bottom: "", outfitImages: [], score: 0 },
+          ]);
         }
       } else {
-        setOutfitSuggestions([{ top: "", bottom: "", outfitImages: [], score: 0 }]);
+        setOutfitSuggestions([
+          { top: "", bottom: "", outfitImages: [], score: 0 },
+        ]);
       }
+
+      setLoading(false);
     } catch (error) {
       console.error("Error generating outfit:", error);
-      setOutfitSuggestions([{ top: "", bottom: "", outfitImages: [], score: 0 }]);
+      setOutfitSuggestions([
+        { top: "", bottom: "", outfitImages: [], score: 0 },
+      ]);
     }
   };
 
@@ -186,9 +220,11 @@ export default function OutfitScreen() {
               >
                 <ThemedView style={styles.imageContainer}>
                   {images.map((img, index) => (
-                    <TouchableOpacity 
-                      key={index} 
-                      onPress={() => setSelectedItem(img === selectedItem ? null : img)}
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() =>
+                        setSelectedItem(img === selectedItem ? null : img)
+                      }
                     >
                       <Image
                         source={{ uri: img }}
@@ -209,11 +245,15 @@ export default function OutfitScreen() {
                   source={{ uri: selectedItem }}
                   style={styles.selectedImage}
                 />
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.clearButton}
                   onPress={() => setSelectedItem(null)}
                 >
-                  <Ionicons name="close-circle" size={30} color={isDarkMode ? "#FFFFFF" : "#000000"} />
+                  <Ionicons
+                    name="close-circle"
+                    size={30}
+                    color={isDarkMode ? "#FFFFFF" : "#000000"}
+                  />
                 </TouchableOpacity>
               </ThemedView>
             )}
@@ -227,6 +267,17 @@ export default function OutfitScreen() {
               </ThemedText>
             </TouchableOpacity>
 
+            {loading && (
+              <ThemedView style={[styles.loadingContainer]}>
+                <ActivityIndicator size="large" color="#000000" />
+                <ThemedText style={styles.loadingText}>Loading...</ThemedText>
+              </ThemedView>
+            )}
+
+            {errorMsg ?? (
+              <ThemedText style={styles.errorText}>{errorMsg}</ThemedText>
+            )}
+
             {outfitSuggestions.length > 0 && (
               <ThemedView
                 style={[
@@ -234,16 +285,23 @@ export default function OutfitScreen() {
                   isDarkMode && styles.outfitContainerDark,
                 ]}
               >
-                {outfitSuggestions[0].top === "" && outfitSuggestions[0].bottom === "" ? (
-                  <ThemedText style={styles.noSuggestionsText}>Try get more cloth</ThemedText>
+                {outfitSuggestions[0].top === "" &&
+                outfitSuggestions[0].bottom === "" ? (
+                  <ThemedText style={styles.noSuggestionsText}>
+                    Try get more cloth
+                  </ThemedText>
                 ) : (
                   outfitSuggestions.map((suggestion, index) => (
                     <ThemedView key={index} style={styles.suggestionItem}>
                       <ThemedView style={styles.suggestionHeader}>
-                        <ThemedText style={styles.outfitNumber}>Outfit {index + 1}</ThemedText>
+                        <ThemedText style={styles.outfitNumber}>
+                          Outfit {index + 1}
+                        </ThemedText>
                         <ThemedView style={styles.scoreContainer}>
                           <Ionicons name="star" size={12} color="#FFD700" />
-                          <ThemedText style={styles.scoreText}>{(suggestion.score * 100).toFixed(0)}</ThemedText>
+                          <ThemedText style={styles.scoreText}>
+                            {(suggestion.score * 100).toFixed(0)}
+                          </ThemedText>
                         </ThemedView>
                       </ThemedView>
                       <ThemedView style={styles.outfitDetails}>
@@ -252,14 +310,18 @@ export default function OutfitScreen() {
                             source={{ uri: suggestion.outfitImages[0] }}
                             style={styles.outfitImage}
                           />
-                          <ThemedText style={styles.itemName}>{suggestion.top}</ThemedText>
+                          <ThemedText style={styles.itemName}>
+                            {suggestion.top}
+                          </ThemedText>
                         </ThemedView>
                         <ThemedView style={styles.outfitItemContainer}>
                           <Image
                             source={{ uri: suggestion.outfitImages[1] }}
                             style={styles.outfitImage}
                           />
-                          <ThemedText style={styles.itemName}>{suggestion.bottom}</ThemedText>
+                          <ThemedText style={styles.itemName}>
+                            {suggestion.bottom}
+                          </ThemedText>
                         </ThemedView>
                       </ThemedView>
                     </ThemedView>
@@ -275,6 +337,21 @@ export default function OutfitScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    marginTop: 16,
+    padding: 10,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "column",
+    display: "flex",
+    height: 250,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+  },
   cardContainer: {
     paddingHorizontal: 16,
     paddingBottom: 16,
@@ -365,65 +442,72 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
   },
   suggestionItem: {
     marginBottom: 24,
     borderBottomWidth: 1,
-    borderBottomColor: '#CCCCCC',
+    borderBottomColor: "#CCCCCC",
     paddingBottom: 16,
   },
   suggestionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 12,
   },
   outfitNumber: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   scoreContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: '#F0F0F0',
+    backgroundColor: "#F0F0F0",
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 12,
   },
   scoreText: {
     marginLeft: 4,
-    fontWeight: 'bold',
-    fontSize: 12
+    fontWeight: "bold",
+    fontSize: 12,
   },
   outfitDetails: {
-    flexDirection: 'column',
-    justifyContent: 'space-between',
+    flexDirection: "column",
+    justifyContent: "space-between",
   },
   outfitItemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   itemName: {
     fontSize: 12,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 4,
   },
   selectedImageContainer: {
-    position: 'relative',
+    position: "relative",
     marginBottom: 16,
   },
   clearButton: {
-    position: 'absolute',
+    position: "absolute",
     top: -12,
     right: -12,
     borderRadius: 15,
     padding: 5,
   },
   noSuggestionsText: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 16,
+  },
+  errorText: {
+    color: "red",
+    marginBottom: 10,
+  },
+  locationText: {
+    marginBottom: 10,
   },
 });

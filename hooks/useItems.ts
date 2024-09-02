@@ -28,20 +28,22 @@ interface OutfitPair {
 }
 
 interface OutfitSuggestionParams {
-  city: string;
-  place: string;
   consider_weather: boolean;
   user_occation: string;
+  latitude: number;
+  longitude: number;
 }
 
 // Define return types for the CRUD operations
 interface UseItemsReturn {
   getItems: () => Promise<Item[]>;
   getItem: (id: number) => Promise<Item>;
-  createItem: (item: Omit<Omit<Item, 'category'>, 'id'>) => Promise<Item>;
+  createItem: (item: Omit<Omit<Item, "category">, "id">) => Promise<Item>;
   updateItem: (id: number, item: Item) => Promise<Item>;
   deleteItem: (id: number) => Promise<void>;
-  getOutfitSuggestions: (params: OutfitSuggestionParams) => Promise<OutfitPair[]>;
+  getOutfitSuggestions: (
+    params: OutfitSuggestionParams
+  ) => Promise<OutfitPair[]>;
 }
 
 // Custom hook to handle item CRUD operations
@@ -54,7 +56,7 @@ export const useItems = (): UseItemsReturn => {
     return await api.get(`items/${id}`);
   };
 
-  const createItem = async (item: Omit<Omit<Item, 'category'>, 'id'>) => {
+  const createItem = async (item: Omit<Omit<Item, "category">, "id">) => {
     console.log("item", item);
     return await api.post("items", item);
   };
@@ -67,9 +69,28 @@ export const useItems = (): UseItemsReturn => {
     return await api.delete(`items/${id}`);
   };
 
-  const getOutfitSuggestions = async (params: OutfitSuggestionParams): Promise<OutfitPair[]> => {
-    return await api.post(`rulebase/`, params);
+  const getOutfitSuggestions = async (
+    params: OutfitSuggestionParams
+  ): Promise<OutfitPair[]> => {
+    const temp = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?lat=${params.latitude}&lon=${params.longitude}&appid=${process.env.EXPO_PUBLIC_WEATHER_API_KEY}&units=metric`
+    )
+      .then((response) => response.json())
+      .then((data) => data);
+
+    return await api.post(`rulebase/`, {
+      temperature: temp.main.feels_like,
+      consider_weather: true,
+      user_occation: params.user_occation,
+    });
   };
 
-  return { getItems, getItem, createItem, updateItem, deleteItem, getOutfitSuggestions };
+  return {
+    getItems,
+    getItem,
+    createItem,
+    updateItem,
+    deleteItem,
+    getOutfitSuggestions,
+  };
 };
