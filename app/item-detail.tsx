@@ -71,25 +71,25 @@ const ItemDetailScreen = () => {
 
       <ThemedView style={styles.infoContainer}>
         <ThemedText style={styles.infoLabel}>Subcategory</ThemedText>
-        <ThemedText style={styles.infoValue}>{item.subcategory.name}</ThemedText>
+        <ThemedText style={styles.infoValue}>
+          {item.subcategory.name}
+        </ThemedText>
       </ThemedView>
 
-      <ThemedView style={styles.infoContainer}>
-        <ThemedText style={styles.infoLabel}>Attributes</ThemedText>
-        {item.attributes && item.attributes.length > 0 && (
-          <ThemedView>
-            <View style={styles.badgeContainer}>
-              {item.attributes.map((attribute, index) => (
-                <View key={index} style={styles.badge}>
-                  <ThemedText style={styles.badgeText}>
-                    {attribute.value}
-                  </ThemedText>
-                </View>
-              ))}
-            </View>
-          </ThemedView>
-        )}
-      </ThemedView>
+      <ThemedText style={styles.infoLabel}>Attributes</ThemedText>
+      {item.attributes && item.attributes.length > 0 && (
+        <ThemedView>
+          <View style={styles.badgeContainer}>
+            {item.attributes.map((attribute, index) => (
+              <View key={index} style={styles.badge}>
+                <ThemedText style={styles.badgeText}>
+                  {attribute.value}
+                </ThemedText>
+              </View>
+            ))}
+          </View>
+        </ThemedView>
+      )}
     </ThemedView>
   );
 };
