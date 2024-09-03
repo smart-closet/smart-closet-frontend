@@ -8,6 +8,7 @@ export interface Item {
   attributes?: Attribute[];
   category_id: number;
   category: Category;
+  subcategory: Subcategory
 }
 
 interface Attribute {
@@ -17,6 +18,11 @@ interface Attribute {
 }
 
 interface Category {
+  id: number;
+  name: string;
+}
+
+interface Subcategory {
   id: number;
   name: string;
 }
@@ -80,7 +86,7 @@ export const useItems = (): UseItemsReturn => {
 
     return await api.post(`rulebase/`, {
       temperature: temp.main.feels_like,
-      consider_weather: true,
+      consider_weather: params.consider_weather,
       user_occation: params.user_occation,
     });
   };

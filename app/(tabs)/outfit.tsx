@@ -3,11 +3,11 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  TextInput,
   useColorScheme,
   ScrollView,
   Platform,
   ActivityIndicator,
+  Switch,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
@@ -44,8 +44,7 @@ export default function OutfitScreen() {
   const [occasion, setOccasion] = useState("Daily_Work_and_Conference");
   // const outfitStyles = ["American", "Japanese", "Korean"];
   // const [outfitStyle, setOutfitStyle] = useState("Japanese");
-
-  const [weather, setWeather] = useState("");
+  const [considerWeather, setConsiderWeather] = useState(true);
 
   // image
   const [outfitSuggestions, setOutfitSuggestions] = useState<
@@ -63,6 +62,8 @@ export default function OutfitScreen() {
   );
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const [weatherData, setWeatherData] = useState<any>(null);
+
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -73,6 +74,15 @@ export default function OutfitScreen() {
 
       let location = await Location.getCurrentPositionAsync({});
       setLocation(location);
+
+      const temp = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${location?.coords.latitude}&lon=${location?.coords.longitude}&appid=${process.env.EXPO_PUBLIC_WEATHER_API_KEY}&units=metric`
+      )
+        .then((response) => response.json())
+        .then((data) => data);
+
+      setWeatherData(temp);
+      console.log("Weather:", temp);
     })();
   }, []);
 
@@ -99,7 +109,7 @@ export default function OutfitScreen() {
       let longitude = location?.coords.longitude;
 
       const suggestions = await getOutfitSuggestions({
-        consider_weather: true,
+        consider_weather: considerWeather,
         user_occation: occasion,
         latitude: latitude ?? 0,
         longitude: longitude ?? 0,
@@ -186,13 +196,57 @@ export default function OutfitScreen() {
               ))}
             </Picker> */}
 
-            <TextInput
+            {/* <TextInput
               placeholder="Weather (e.g., sunny, rainy)"
               value={weather}
               onChangeText={setWeather}
               style={[styles.input, isDarkMode && styles.inputDark]}
               placeholderTextColor={isDarkMode ? "#999999" : "#666666"}
-            />
+            /> */}
+
+            <ThemedView style={styles.toggleContainer}>
+              <ThemedText>Consider Weather:</ThemedText>
+              <Switch
+                value={considerWeather}
+                onValueChange={setConsiderWeather}
+                thumbColor={"#CCCCCC"}
+                {...Platform.select({
+                  web: {
+                    activeThumbColor: "black",
+                  },
+                })}
+                trackColor={{ false: "#CCCCCC", true: "#CCCCCC" }}
+              />
+            </ThemedView>
+
+            {weatherData && (
+            <ThemedView
+              style={[
+                styles.card,
+                styles.weatherCard,
+                isDarkMode && styles.cardDark,
+              ]}
+            >
+              <ThemedView style={styles.weatherHeader}>
+                <ThemedView>
+                  <ThemedText style={styles.weatherTitle}>
+                    {weatherData.weather[0].description}
+                  </ThemedText>
+                  <ThemedText>
+                    {weatherData.main.temp_min} / {weatherData.main.temp_max} °C
+                  </ThemedText>
+                </ThemedView>
+                <Image
+                  source={{
+                    uri: `http://openweathermap.org/img/wn/${weatherData.weather[0].icon}@2x.png`,
+                  }}
+                  style={styles.weatherIcon}
+                />
+              </ThemedView>
+              {/* <ThemedText>體感溫度: {weatherData.main.feels_like}°C</ThemedText> */}
+              {/* <ThemedText>濕度: {weatherData.main.humidity}%</ThemedText> */}
+            </ThemedView>
+          )}
 
             <ThemedView style={styles.buttonContainer}>
               <TouchableOpacity
@@ -207,7 +261,7 @@ export default function OutfitScreen() {
                   type="default"
                   style={[styles.buttonText, { color: buttonColor }]}
                 >
-                  {showImages ? "Hide Items" : "Select Item (Optional)"}
+                  {showImages ? "Hide Items" : "Select Item"}
                 </ThemedText>
               </TouchableOpacity>
             </ThemedView>
@@ -509,5 +563,33 @@ const styles = StyleSheet.create({
   },
   locationText: {
     marginBottom: 10,
+  },
+  toggleContainer: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  weatherCard: {
+    paddingHorizontal: 24,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  weatherHeader: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  weatherTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  weatherIcon: {
+    width: 50,
+    height: 50,
+  },
+  weatherInfo: {
+    gap: 4,
   },
 });

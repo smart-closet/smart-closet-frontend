@@ -70,6 +70,11 @@ const ItemDetailScreen = () => {
       </ThemedView>
 
       <ThemedView style={styles.infoContainer}>
+        <ThemedText style={styles.infoLabel}>Subcategory</ThemedText>
+        <ThemedText style={styles.infoValue}>{item.subcategory.name}</ThemedText>
+      </ThemedView>
+
+      <ThemedView style={styles.infoContainer}>
         <ThemedText style={styles.infoLabel}>Attributes</ThemedText>
         {item.attributes && item.attributes.length > 0 && (
           <ThemedView>
