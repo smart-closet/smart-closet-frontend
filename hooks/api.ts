@@ -10,14 +10,21 @@ const api = {
         return await response.json();
     },
 
-    async post(url: string, data: Record<string, any>) {
+    async post(url: string, data: Record<string, any> | FormData, content_type?: string) {
+        const headers: HeadersInit = {};
+    
+        // Check if data is FormData and do not set Content-Type if it is
+        if (data instanceof FormData) {
+        } else {
+            headers['Content-Type'] = content_type ?? 'application/json';
+        }
+    
         const response = await fetch(`${BASE_URL}${url}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
+            headers,
+            body: data instanceof FormData ? data : JSON.stringify(data),
         });
+    
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }

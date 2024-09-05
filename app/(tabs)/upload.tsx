@@ -16,18 +16,18 @@ import * as ImagePicker from "expo-image-picker";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import useStorage from "@/hooks/useStorage";
+import { useItems } from "@/hooks/useItems";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
+  const { createItem } = useItems();
 
   const [image, setImage] = useState<ImagePicker.ImagePickerAsset>();
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const itemNameRef = useRef<any>(null);
   const options = ["Top", "Bottom", "Bag", "Shoes", "Other"];
-  const { createFile } = useStorage();
 
   useEffect(() => {
     (async () => {
@@ -69,11 +69,7 @@ export default function HomeScreen() {
 
     try {
       if (image) {
-        await createFile({
-          file: image,
-          category_id: options.indexOf(selectedOption) + 1,
-          itemName: `${itemNameRef.current.value}`,
-        });
+        await createItem(itemNameRef.current.value, image);
         if (Platform.OS === "web") {
           alert("Success! Image uploaded successfully!");
         } else {
@@ -83,9 +79,6 @@ export default function HomeScreen() {
         Alert.alert("Error", "Image data is not available.");
         alert("Image data is not available.");
       }
-
-      // setImage(undefined);
-      // setSelectedOption("");
     } catch (error) {
       console.error("Error uploading image: ", error);
       Alert.alert("Error", "Failed to upload image. Please try again.");
@@ -100,7 +93,16 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
-        {image ? (
+        <ThemedText type="subtitle" style={{ textAlign: "left" }}>
+          What name of item is this?
+        </ThemedText>
+        <TextInput
+          ref={itemNameRef} // 設定 ref
+          style={styles.input}
+          placeholder="Enter item name"
+          onChangeText={(e) => (itemNameRef.current.value = e)}
+        />
+        {/* {image ? (
           <>
             <Image source={{ uri: image.uri }} style={styles.image} />
             <ThemedText type="subtitle" style={{ textAlign: "left" }}>
@@ -120,18 +122,8 @@ export default function HomeScreen() {
                 </TouchableOpacity>
               ))}
             </View>
-
-            <ThemedText type="subtitle" style={{ textAlign: "left" }}>
-              What name of item is this?
-            </ThemedText>
-            <TextInput
-              ref={itemNameRef} // 設定 ref
-              style={styles.input}
-              placeholder="Enter item name"
-              onChangeText={(e) => (itemNameRef.current.value = e)}
-            />
           </>
-        ) : null}
+        ) : null} */}
 
         <TouchableOpacity style={styles.pickButton} onPress={pickImage}>
           <Ionicons

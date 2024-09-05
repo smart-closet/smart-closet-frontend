@@ -1,4 +1,5 @@
 import { api } from "./api";
+import * as ImagePicker from "expo-image-picker";
 
 // Define Item type
 export interface Item {
@@ -44,7 +45,7 @@ interface OutfitSuggestionParams {
 interface UseItemsReturn {
   getItems: () => Promise<Item[]>;
   getItem: (id: number) => Promise<Item>;
-  createItem: (item: Omit<Omit<Item, "category">, "id">) => Promise<Item>;
+  createItem: (name: string, image: ImagePicker.ImagePickerAsset) => Promise<Item>;
   updateItem: (id: number, item: Item) => Promise<Item>;
   deleteItem: (id: number) => Promise<void>;
   getOutfitSuggestions: (
@@ -62,9 +63,19 @@ export const useItems = (): UseItemsReturn => {
     return await api.get(`items/${id}`);
   };
 
-  const createItem = async (item: Omit<Omit<Item, "category">, "id">) => {
-    console.log("item", item);
-    return await api.post("items", item);
+  const uriToBuffer = async (uri: string) => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    return blob;
+  };
+
+  const createItem = async (name: string, image: ImagePicker.ImagePickerAsset) => {
+    const formData = new FormData();
+    formData.append("name", name);
+    const imageBuffer = await uriToBuffer(image.uri);
+    formData.append("image", imageBuffer, `${image.fileName}`);
+
+    return await api.post("items", formData);
   };
 
   const updateItem = async (id: number, item: Item) => {
