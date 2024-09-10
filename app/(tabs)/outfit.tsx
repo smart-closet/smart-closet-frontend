@@ -233,7 +233,7 @@ export default function OutfitScreen() {
                     {weatherData.weather[0].description}
                   </ThemedText>
                   <ThemedText>
-                    {weatherData.main.temp_min} / {weatherData.main.temp_max} °C
+                    {weatherData.main.feels_like} °C
                   </ThemedText>
                 </ThemedView>
                 <Image

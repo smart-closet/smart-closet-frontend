@@ -45,7 +45,7 @@ interface OutfitSuggestionParams {
 interface UseItemsReturn {
   getItems: () => Promise<Item[]>;
   getItem: (id: number) => Promise<Item>;
-  createItem: (name: string, image: ImagePicker.ImagePickerAsset) => Promise<Item>;
+  createItem: (image: ImagePicker.ImagePickerAsset) => Promise<Item[]>;
   updateItem: (id: number, item: Item) => Promise<Item>;
   deleteItem: (id: number) => Promise<void>;
   getOutfitSuggestions: (
@@ -69,9 +69,8 @@ export const useItems = (): UseItemsReturn => {
     return blob;
   };
 
-  const createItem = async (name: string, image: ImagePicker.ImagePickerAsset) => {
+  const createItem = async (image: ImagePicker.ImagePickerAsset) => {
     const formData = new FormData();
-    formData.append("name", name);
     const imageBuffer = await uriToBuffer(image.uri);
     formData.append("image", imageBuffer, `${image.fileName}`);
 

@@ -5,18 +5,19 @@ import {
   Image,
   ScrollView,
   useColorScheme,
-  View,
   Platform,
   Dimensions,
   Alert,
   TextInput,
+  View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { useItems } from "@/hooks/useItems";
+import { Item, useItems } from "@/hooks/useItems";
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -24,10 +25,11 @@ export default function HomeScreen() {
   const { createItem } = useItems();
 
   const [image, setImage] = useState<ImagePicker.ImagePickerAsset>();
-  const [selectedOption, setSelectedOption] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const itemNameRef = useRef<any>(null);
-  const options = ["Top", "Bottom", "Bag", "Shoes", "Other"];
+
+  const [res, setRes] = useState<Item[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     (async () => {
@@ -60,24 +62,15 @@ export default function HomeScreen() {
       Alert.alert("Please select an image first.");
       return;
     }
-    if (!selectedOption) {
-      Alert.alert("Please select an option for the item type.");
-      return;
-    }
 
     setIsUploading(true);
 
     try {
       if (image) {
-        await createItem(itemNameRef.current.value, image);
-        if (Platform.OS === "web") {
-          alert("Success! Image uploaded successfully!");
-        } else {
-          Alert.alert("Success", "Image uploaded successfully!");
-        }
+        const response = await createItem(image);
+        setRes(response);
       } else {
         Alert.alert("Error", "Image data is not available.");
-        alert("Image data is not available.");
       }
     } catch (error) {
       console.error("Error uploading image: ", error);
@@ -87,6 +80,65 @@ export default function HomeScreen() {
     }
   };
 
+  console.log(res);
+
+  if (res.length !== 0) {
+    res.sort((a, b) => b.id - a.id);
+    return (
+      <ThemedView style={styles.container}>
+        <View style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+          <Ionicons name="checkmark-circle-outline" size={100} color="green" />
+          <ThemedText type="subtitle" style={{ textAlign: "left" }}>
+            Successfully Upload
+          </ThemedText>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={styles.cardContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          {res.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={styles.card}
+              onPress={() =>
+                router.push({
+                  pathname: "/item-detail",
+                  params: {
+                    itemId: encodeURIComponent(JSON.stringify(item.id)),
+                  },
+                })
+              }
+            >
+              <View style={styles.badge}>
+                <ThemedText style={styles.badgeText}>
+                  {item.category.name}
+                </ThemedText>
+              </View>
+              <Image
+                source={{ uri: item.image_url }}
+                style={{ width: 120, height: 120 }}
+              />
+
+              <View style={styles.cardText}>
+                <ThemedText type="defaultSemiBold">{item.name}</ThemedText>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <TouchableOpacity
+          style={[styles.uploadButton, isUploading && styles.uploadingButton]}
+          onPress={() => setRes([])}
+        >
+          <ThemedText style={styles.uploadButtonText}>
+            {isUploading ? "Uploading..." : "Upload More Items"}
+          </ThemedText>
+        </TouchableOpacity>
+      </ThemedView>
+    );
+  }
+
   return (
     <ThemedView style={styles.container}>
       <ScrollView
@@ -94,36 +146,16 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <ThemedText type="subtitle" style={{ textAlign: "left" }}>
-          What name of item is this?
+          Upload Outfit
         </ThemedText>
-        <TextInput
+        {/* <TextInput
           ref={itemNameRef} // 設定 ref
           style={styles.input}
           placeholder="Enter item name"
           onChangeText={(e) => (itemNameRef.current.value = e)}
-        />
-        {/* {image ? (
-          <>
-            <Image source={{ uri: image.uri }} style={styles.image} />
-            <ThemedText type="subtitle" style={{ textAlign: "left" }}>
-              What kind of item is this?
-            </ThemedText>
-            <View style={styles.optionsContainer}>
-              {options.map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={[
-                    styles.optionButton,
-                    selectedOption === option && styles.selectedOption,
-                  ]}
-                  onPress={() => setSelectedOption(option)}
-                >
-                  <ThemedText>{option}</ThemedText>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </>
-        ) : null} */}
+        /> */}
+
+        {image && <Image source={{ uri: image.uri }} style={styles.image} />}
 
         <TouchableOpacity style={styles.pickButton} onPress={pickImage}>
           <Ionicons
@@ -214,5 +246,37 @@ const styles = StyleSheet.create({
     borderColor: "#ccc", // Added border color
     padding: 10, // Added padding
     borderRadius: 8, // Added border radius
+  },
+  card: {
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    width: "48%",
+    alignItems: "center",
+  },
+  cardText: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+    marginTop: 8,
+  },
+  cardContainer: {
+    display: "flex",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginTop: 16,
+  },
+  badge: {
+    backgroundColor: "#E0E0E0",
+    borderRadius: 16,
+    paddingVertical: 2,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
+  badgeText: {
+    fontSize: 14,
   },
 });
