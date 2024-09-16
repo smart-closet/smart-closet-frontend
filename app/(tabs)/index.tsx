@@ -29,7 +29,7 @@ export default function HomeScreen() {
             <Text>Outfit</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.functionButton}>
+          <TouchableOpacity style={styles.functionButton} onPress={() => router.push("/try-on")}>
             <Ionicons name="camera-outline" size={24} color="#000" />
             <Text>Try-on</Text>
           </TouchableOpacity>
