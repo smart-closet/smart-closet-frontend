@@ -14,6 +14,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { Item, useItems } from "@/hooks/useItems";
 import Header from "@/components/Header";
 import { api } from "@/hooks/api";
+import { MyImage, useMyImages } from "@/hooks/useMyImages";
 
 interface CardProps {
   title: string;
@@ -74,9 +75,15 @@ const Card: React.FC<CardProps> = ({
 
 export default function TryOnScreen() {
   const { getItems } = useItems();
+  const { getMyImages } = useMyImages();
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === "dark";
+
   const [items, setItems] = useState<Item[]>([]);
+  const [myImages, setMyImages] = useState<MyImage[]>([]);
   const [selectedTop, setSelectedTop] = useState<Item | null>(null);
   const [selectedBottom, setSelectedBottom] = useState<Item | null>(null);
+  const [selectedMyImage, setSelectedMyImage] = useState<MyImage | null>(null);
 
   const [result, setResult] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -102,7 +109,9 @@ export default function TryOnScreen() {
     const fetchItems = async () => {
       try {
         const fetchedItems = await getItems();
+        const fetchedMyImages = await getMyImages();
         setItems(fetchedItems);
+        setMyImages(fetchedMyImages);
       } catch (error) {
         console.error("Error fetching items:", error);
       }
@@ -112,10 +121,15 @@ export default function TryOnScreen() {
 
   const tryOn = async () => {
     setLoading(true);
-    const response = await api.post("try-on", [
-      "https://scontent-atl3-1.cdninstagram.com/v/t51.29350-15/274634263_1377079109405972_1061633955932495662_n.jpg?stp=dst-jpg_e35&efg=eyJ2ZW5jb2RlX3RhZyI6ImltYWdlX3VybGdlbi4xNDQweDE3OTYuc2RyLmYyOTM1MC5kZWZhdWx0X2ltYWdlIn0&_nc_ht=scontent-atl3-1.cdninstagram.com&_nc_cat=108&_nc_ohc=VnYJmQeqZ0kQ7kNvgHBVlUB&_nc_gid=24297131248f4f6eb48f8284430d3ea3&edm=APs17CUBAAAA&ccb=7-5&ig_cache_key=Mjc4MTkxMjM5NzM5OTMxOTk3NA%3D%3D.3-ccb7-5&oh=00_AYBpyg_aa4IrfKrFPmFUMQ5-fyARNphTT7aAOcn-g7_2qA&oe=66EDC1DE&_nc_sid=10d13b",
-      "https://cdn.beams.co.jp/img/goods/11241388995/L/11241388995_C_3.jpg",
-    ]);
+    const response = await api.post(
+      "try-on",
+      [
+        selectedMyImage && selectedMyImage.image_url,
+        selectedTop && selectedTop.image_url,
+        selectedBottom && selectedBottom.image_url,
+      ].filter(Boolean)
+    );
+    console.log("Try on response:", response);
     setResult(response.result);
     setLoading(false);
   };
@@ -151,6 +165,50 @@ export default function TryOnScreen() {
             {categories.map((category, index) => (
               <Card key={index} {...category} />
             ))}
+
+            <ThemedView style={styles.cardContainer}>
+              <ThemedView style={[styles.card, isDarkMode && styles.cardDark]}>
+                <ThemedView style={styles.cardHeader}>
+                  <Ionicons
+                    name={"man-outline"}
+                    size={28}
+                    style={styles.cardIcon}
+                  />
+                  <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
+                    {"My Images"}
+                  </ThemedText>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={isDarkMode ? "#A1A1A6" : "#8E8E93"}
+                  />
+                </ThemedView>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <ThemedView style={styles.imageContainer}>
+                    {myImages.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() => setSelectedMyImage(item)}
+                      >
+                        <Image
+                          source={{ uri: item.image_url }}
+                          style={styles.cardImage}
+                        />
+                        {selectedMyImage && selectedMyImage.id == item.id && (
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={20}
+                            color="#000000"
+                            style={styles.checkIcon}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </ThemedView>
+                </ScrollView>
+              </ThemedView>
+            </ThemedView>
+
             <TouchableOpacity
               style={[styles.uploadButton]}
               onPress={async () => await tryOn()}
