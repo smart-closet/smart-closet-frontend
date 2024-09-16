@@ -13,6 +13,8 @@ import { ThemedView } from "@/components/ThemedView";
 import { Item, useItems } from "@/hooks/useItems";
 import { useRouter } from "expo-router";
 import Header from "@/components/Header";
+import { RootState } from "@/store";
+import { useSelector } from "react-redux";
 
 interface CardProps {
   title: string;
@@ -67,21 +69,7 @@ const Card: React.FC<CardProps> = ({ title, iconName, items }) => {
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
-
-  const { getItems } = useItems();
-  const [items, setItems] = useState<Item[]>([]);
-
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const fetchedItems = await getItems();
-        setItems(fetchedItems);
-      } catch (error) {
-        console.error("Error fetching items:", error);
-      }
-    };
-    fetchItems();
-  }, []);
+  const items = useSelector((state: RootState) => state.items);
 
   const categories = [
     {

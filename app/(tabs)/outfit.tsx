@@ -15,9 +15,11 @@ import * as Location from "expo-location";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { useItems } from "@/hooks/useItems";
+import { Item, useItems } from "@/hooks/useItems";
 import { Picker } from "@react-native-picker/picker";
 import Header from "@/components/Header";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 
 interface OutfitSuggestion {
   top: string;
@@ -52,12 +54,12 @@ export default function OutfitScreen() {
   const [outfitSuggestions, setOutfitSuggestions] = useState<
     OutfitSuggestion[]
   >([]);
-  const [images, setImages] = useState<string[]>([]);
+  const items = useSelector((state: RootState) => state.items);
   const [considerItem, setConsiderItem] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const { getItems, getOutfitSuggestions } = useItems();
+  const { getOutfitSuggestions } = useItems();
 
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
@@ -88,20 +90,6 @@ export default function OutfitScreen() {
     })();
   }, []);
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const fetchedItems = await getItems();
-        if (fetchedItems) {
-          setImages(fetchedItems.map((item) => item.image_url));
-        }
-      } catch (error) {
-        console.error("Error fetching items:", error);
-      }
-    };
-    fetchItems();
-  }, []);
-
   const generateOutfit = async () => {
     try {
       setLoading(true);
@@ -115,6 +103,7 @@ export default function OutfitScreen() {
         user_occation: occasion,
         latitude: latitude ?? 0,
         longitude: longitude ?? 0,
+        item_id: selectedItem ? selectedItem.id : undefined,
       });
 
       console.log("Suggestions:", suggestions);
@@ -126,8 +115,8 @@ export default function OutfitScreen() {
         if (selectedItem && considerItem) {
           filteredSuggestions = suggestions.filter(
             (suggestion) =>
-              suggestion.top.image_url === selectedItem ||
-              suggestion.bottom.image_url === selectedItem
+              suggestion.top.image_url === selectedItem.image_url ||
+              suggestion.bottom.image_url === selectedItem.image_url
           );
         }
 
@@ -171,7 +160,7 @@ export default function OutfitScreen() {
       <Header title="Outfit" />
       <ScrollView showsVerticalScrollIndicator={false}>
         <ThemedView>
-          <Text style={styles.sectionTitle}>📌  Choose Occasion</Text>
+          <Text style={styles.sectionTitle}>📌 Choose Occasion</Text>
           <Picker
             dropdownIconColor={isDarkMode ? "#FFFFFF" : "#000000"}
             selectedValue={occasion}
@@ -228,7 +217,7 @@ export default function OutfitScreen() {
           )}
 
           <ThemedView style={styles.buttonContainer}>
-            <Text style={styles.sectionTitle}>📌  Specify Top or Bottom</Text>
+            <Text style={styles.sectionTitle}>📌 Specify Top or Bottom</Text>
             <Switch
               value={considerItem}
               onValueChange={setConsiderItem}
@@ -242,25 +231,25 @@ export default function OutfitScreen() {
             />
           </ThemedView>
 
-          {considerItem && images.length > 0 && (
+          {considerItem && items.length > 0 && (
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               style={{ marginBottom: 16 }}
             >
               <ThemedView style={styles.imageContainer}>
-                {images.map((img, index) => (
+                {items.map((item, index) => (
                   <TouchableOpacity
                     key={index}
                     onPress={() =>
-                      setSelectedItem(img === selectedItem ? null : img)
+                      setSelectedItem(item === selectedItem ? null : item)
                     }
                   >
                     <Image
-                      source={{ uri: img }}
+                      source={{ uri: item.image_url }}
                       style={[
                         styles.thumbnailImage,
-                        img === selectedItem && styles.selectedThumbnail,
+                        item === selectedItem && styles.selectedThumbnail,
                       ]}
                     />
                   </TouchableOpacity>
@@ -272,7 +261,7 @@ export default function OutfitScreen() {
           {selectedItem && considerItem && (
             <ThemedView style={styles.selectedImageContainer}>
               <Image
-                source={{ uri: selectedItem }}
+                source={{ uri: selectedItem.image_url }}
                 style={styles.selectedImage}
               />
               <TouchableOpacity

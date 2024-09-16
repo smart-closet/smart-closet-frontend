@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { useDispatch } from "react-redux";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -23,6 +24,7 @@ export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
   const { createItem } = useItems();
+  const dispatch = useDispatch();
 
   const [image, setImage] = useState<ImagePicker.ImagePickerAsset>();
   const [isUploading, setIsUploading] = useState<boolean>(false);
@@ -68,6 +70,7 @@ export default function HomeScreen() {
       if (image) {
         const response = await createItem(image);
         setRes(response);
+        dispatch({ type: 'ADD_ITEM', payload: response });
       } else {
         Alert.alert("Error", "Image data is not available.");
       }

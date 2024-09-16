@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   ScrollView,
   Text,
@@ -6,27 +6,13 @@ import {
   Image,
 } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
-import { useRouter } from "expo-router";
 import Header from "@/components/Header";
-import { Item, useItems } from "@/hooks/useItems";
 import { ThemedText } from "@/components/ThemedText";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 
 export default function AnalysisScreen() {
-  const router = useRouter();
-  const { getItems } = useItems();
-  const [items, setItems] = useState<Item[]>([]);
-
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const fetchedItems = await getItems();
-        setItems(fetchedItems);
-      } catch (error) {
-        console.error("Error fetching items:", error);
-      }
-    };
-    fetchItems();
-  }, []);
+  const items = useSelector((state: RootState) => state.items);
 
   return (
     <ThemedView style={styles.container}>

@@ -39,6 +39,7 @@ interface OutfitSuggestionParams {
   user_occation: string;
   latitude: number;
   longitude: number;
+  item_id?: number;
 }
 
 // Define return types for the CRUD operations
@@ -98,6 +99,7 @@ export const useItems = (): UseItemsReturn => {
       temperature: temp.main.feels_like,
       consider_weather: params.consider_weather,
       user_occation: params.user_occation,
+      item_id: params.item_id,
     });
   };
 

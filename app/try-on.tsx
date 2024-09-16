@@ -8,13 +8,15 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSelector, useDispatch } from "react-redux"; // 新增
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Item, useItems } from "@/hooks/useItems";
+import { Item } from "@/hooks/useItems";
 import Header from "@/components/Header";
 import { api } from "@/hooks/api";
 import { MyImage, useMyImages } from "@/hooks/useMyImages";
+import { RootState } from "@/store";
 
 interface CardProps {
   title: string;
@@ -74,12 +76,11 @@ const Card: React.FC<CardProps> = ({
 };
 
 export default function TryOnScreen() {
-  const { getItems } = useItems();
+  const items = useSelector((state: RootState) => state.items);
   const { getMyImages } = useMyImages();
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
 
-  const [items, setItems] = useState<Item[]>([]);
   const [myImages, setMyImages] = useState<MyImage[]>([]);
   const [selectedTop, setSelectedTop] = useState<Item | null>(null);
   const [selectedBottom, setSelectedBottom] = useState<Item | null>(null);
@@ -108,12 +109,10 @@ export default function TryOnScreen() {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const fetchedItems = await getItems();
         const fetchedMyImages = await getMyImages();
-        setItems(fetchedItems);
         setMyImages(fetchedMyImages);
       } catch (error) {
-        console.error("Error fetching items:", error);
+        console.error("Error fetching my images:", error);
       }
     };
     fetchItems();
