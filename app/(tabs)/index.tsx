@@ -1,106 +1,69 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   StyleSheet,
-  TouchableOpacity,
-  Image,
   ScrollView,
-  useColorScheme,
+  Text,
+  View,
+  TouchableOpacity,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-
-import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Item, useItems } from "@/hooks/useItems";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-
-interface CardProps {
-  title: string;
-  iconName: string;
-  items: Item[];
-}
-
-const Card: React.FC<CardProps> = ({ title, iconName, items }) => {
-  const colorScheme = useColorScheme();
-  const router = useRouter();
-  const isDarkMode = colorScheme === "dark";
-
-  return (
-    <ThemedView style={styles.cardContainer}>
-      <ThemedView style={[styles.card, isDarkMode && styles.cardDark]}>
-        <ThemedView style={styles.cardHeader}>
-          <Ionicons name={iconName as any} size={28} style={styles.cardIcon} />
-          <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
-            {title}
-          </ThemedText>
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color={isDarkMode ? "#A1A1A6" : "#8E8E93"}
-          />
-        </ThemedView>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <ThemedView style={styles.imageContainer}>
-            {items.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() =>
-                  router.push({
-                    pathname: "/item-detail",
-                    params: { itemId: encodeURIComponent(JSON.stringify(item.id)) },
-                  })
-                }
-              >
-                <Image
-                  source={{ uri: item.image_url }}
-                  style={styles.cardImage}
-                />
-              </TouchableOpacity>
-            ))}
-          </ThemedView>
-        </ScrollView>
-      </ThemedView>
-    </ThemedView>
-  );
-};
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 export default function HomeScreen() {
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === "dark";
-
-  const { getItems } = useItems();
-  const [items, setItems] = useState<Item[]>([]);
-
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const fetchedItems = await getItems();
-        setItems(fetchedItems);
-      } catch (error) {
-        console.error("Error fetching items:", error);
-      }
-    };
-    fetchItems();
-  }, []);
-
-  const categories = [
-    {
-      title: "Tops",
-      iconName: "shirt-outline",
-      items: items.filter((item) => item.category.name === "top"),
-    },
-    {
-      title: "Bottoms",
-      iconName: "cut-outline",
-      items: items.filter((item) => item.category.name === "bottom"),
-    },
-  ];
-
+  const router = useRouter();
   return (
     <ThemedView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {categories.map((category, index) => (
-          <Card key={index} {...category} />
-        ))}
+      <ScrollView>
+        <View style={styles.header}>
+          <Text style={styles.title}>My Home</Text>
+          <Ionicons name="search-outline" size={24} color="#000" />
+        </View>
+        <Text style={styles.welcome}>Hi, welcome home Mrs. Chen!</Text>
+
+        <Text style={styles.sectionTitle}>💡 Ideas</Text>
+        <View style={styles.mainFunctions}>
+          <TouchableOpacity
+            style={styles.functionButton}
+            onPress={() => router.push("/(tabs)/outfit")}
+          >
+            <Ionicons name="shirt-outline" size={24} color="#000" />
+            <Text>Outfit</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.functionButton}>
+            <Ionicons name="camera-outline" size={24} color="#000" />
+            <Text>Try-on</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.functionButton}>
+            <Ionicons name="analytics-outline" size={24} color="#000" />
+            <Text>Analysis</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.sectionTitle}>🤟 My Place</Text>
+        <View style={styles.updateFunctions}>
+          
+          <TouchableOpacity style={styles.updateButton}>
+            <MaterialCommunityIcons name="wardrobe-outline" size={24} color="#000" onPress={() => router.push("/(tabs)/closet")} />
+            <Text>My Wardrobe</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.updateButton}>
+            <Ionicons name="cloud-upload-outline" size={24} color="#000" />
+            <Text>Upload cloth</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.updateButton}>
+            <Ionicons name="person-outline" size={24} color="#000" />
+            <Text>Upload image</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.updateButton}>
+            <Ionicons name="person-circle-outline" size={24} color="#000" />
+            <Text>Personal Profile</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </ThemedView>
   );
@@ -109,41 +72,52 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 24,
   },
-  cardContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  card: {
-    backgroundColor: "#F0F0F5",
-    borderRadius: 12,
-    padding: 16,
-  },
-  cardDark: {
-    backgroundColor: "#1C1C1E",
-  },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-    backgroundColor: "transparent",
-  },
-  cardIcon: {
-    marginRight: 16,
-  },
-  cardTitle: {
-    flex: 1,
-  },
-  imageContainer: {
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    backgroundColor: "transparent",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+  welcome: {
+    fontSize: 16,
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 16,
+  },
+  mainFunctions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 24,
+  },
+  functionButton: {
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+    padding: 16,
+    borderRadius: 8,
+    width: "32%",
     gap: 8,
   },
-  cardImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
-    marginRight: 0,
+  updateFunctions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  updateButton: {
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+    padding: 16,
+    borderRadius: 8,
+    width: "49%",
+    marginBottom: 8,
+    gap: 8,
   },
 });

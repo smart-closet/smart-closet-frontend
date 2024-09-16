@@ -6,7 +6,7 @@ import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Ionicons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { TouchableOpacity } from "react-native";
 
 export default function TabLayout() {
@@ -16,11 +16,14 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].text,
-        headerShown: true,
+        headerShown: false,
         tabBarStyle: {
           backgroundColor: Colors[colorScheme ?? "light"].background,
-          // borderTopWidth: 0,
-          height: 40
+          height: 54,
+        },
+        tabBarLabelStyle: {
+          fontSize: 10,
+          bottom: 2,
         },
         header: ({ navigation }) => (
           <ThemedView
@@ -28,17 +31,21 @@ export default function TabLayout() {
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
-              paddingHorizontal: 16,
+              paddingHorizontal: 30,
               paddingVertical: 12,
               backgroundColor: Colors[colorScheme ?? "light"].background,
             }}
           >
-            <ThemedText type="title" style={{fontSize: 20}}>My Closet</ThemedText>
-            <TouchableOpacity onPress={() => navigation.navigate("Search")}>
-              <Ionicons
-                name="search-outline"
+            <ThemedText type="title" style={{ fontSize: 20, display: "flex", gap: 6, alignContent: "center" }}>
+              Smart Closet
+              <MaterialCommunityIcons
+                name="wardrobe-outline"
                 size={24}
+                color="black"
               />
+            </ThemedText>
+            <TouchableOpacity onPress={() => navigation.navigate("Search")}>
+              
             </TouchableOpacity>
           </ThemedView>
         ),
@@ -49,9 +56,7 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ focused }) => (
-            <TabBarIcon
-              name={focused ? "home" : "home-outline"}
-            />
+            <TabBarIcon name={focused ? "home" : "home-outline"} />
           ),
         }}
       />
@@ -60,9 +65,7 @@ export default function TabLayout() {
         options={{
           title: "Upload",
           tabBarIcon: ({ focused }) => (
-            <TabBarIcon
-              name={focused ? "add-circle" : "add-circle-outline"}
-            />
+            <TabBarIcon name={focused ? "add-circle" : "add-circle-outline"} />
           ),
         }}
       />
@@ -71,10 +74,18 @@ export default function TabLayout() {
         options={{
           title: "Outfit",
           tabBarIcon: ({ focused }) => (
-            <TabBarIcon
-              name={focused ? "shirt" : "shirt-outline"}
-            />
+            <TabBarIcon name={focused ? "shirt" : "shirt-outline"} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="closet"
+        options={{
+          title: "Closet",
+          tabBarIcon: ({ focused }) => (
+            <MaterialCommunityIcons name={focused ? "wardrobe" : "wardrobe-outline"} size={28} />
+          ),
+          tabBarIconStyle: { marginBottom: -4 },
         }}
       />
     </Tabs>
