@@ -37,7 +37,7 @@ export default function HomeScreen() {
             <Text>Try-on</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.functionButton}>
+          <TouchableOpacity style={styles.functionButton} onPress={() => router.push("/analysis")}>
             <Ionicons name="analytics-outline" size={24} color="#000" />
             <Text>Analysis</Text>
           </TouchableOpacity>
@@ -57,7 +57,7 @@ export default function HomeScreen() {
             <Text>My Closet</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.updateButton}>
+          <TouchableOpacity style={styles.updateButton} onPress={() => router.push("/upload")}>
             <Ionicons name="cloud-upload-outline" size={24} color="#000" />
             <Text>Upload Cloth</Text>
           </TouchableOpacity>

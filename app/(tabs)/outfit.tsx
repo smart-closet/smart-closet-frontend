@@ -185,7 +185,7 @@ export default function OutfitScreen() {
 
           <ThemedView style={styles.toggleContainer}>
             <ThemedText style={[styles.sectionTitle, { marginBottom: 0 }]}>
-              📌  Consider Weather
+              📌 Consider Weather
             </ThemedText>
             <Switch
               value={considerWeather}
