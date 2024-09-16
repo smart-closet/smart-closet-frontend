@@ -171,7 +171,7 @@ export default function OutfitScreen() {
       <Header title="Outfit" />
       <ScrollView showsVerticalScrollIndicator={false}>
         <ThemedView>
-          <Text style={styles.sectionTitle}>📌 Choose Occasion</Text>
+          <Text style={styles.sectionTitle}>📌  Choose Occasion</Text>
           <Picker
             dropdownIconColor={isDarkMode ? "#FFFFFF" : "#000000"}
             selectedValue={occasion}
@@ -185,7 +185,7 @@ export default function OutfitScreen() {
 
           <ThemedView style={styles.toggleContainer}>
             <ThemedText style={[styles.sectionTitle, { marginBottom: 0 }]}>
-              📌 Consider Weather
+              📌  Consider Weather
             </ThemedText>
             <Switch
               value={considerWeather}
@@ -228,7 +228,7 @@ export default function OutfitScreen() {
           )}
 
           <ThemedView style={styles.buttonContainer}>
-            <Text style={styles.sectionTitle}>📌 Specify Top or Bottom</Text>
+            <Text style={styles.sectionTitle}>📌  Specify Top or Bottom</Text>
             <Switch
               value={considerItem}
               onValueChange={setConsiderItem}

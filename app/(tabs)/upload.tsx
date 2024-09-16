@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -8,7 +8,6 @@ import {
   Platform,
   Dimensions,
   Alert,
-  TextInput,
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,6 +17,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Item, useItems } from "@/hooks/useItems";
 import { useRouter } from "expo-router";
+import Header from "@/components/Header";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -26,7 +26,6 @@ export default function HomeScreen() {
 
   const [image, setImage] = useState<ImagePicker.ImagePickerAsset>();
   const [isUploading, setIsUploading] = useState<boolean>(false);
-  const itemNameRef = useRef<any>(null);
 
   const [res, setRes] = useState<Item[]>([]);
   const router = useRouter();
@@ -86,7 +85,16 @@ export default function HomeScreen() {
     res.sort((a, b) => b.id - a.id);
     return (
       <ThemedView style={styles.container}>
-        <View style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+        <Header title="Upload Cloth" />
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            alignItems: "center",
+            marginTop: 8,
+          }}
+        >
           <Ionicons name="checkmark-circle-outline" size={100} color="green" />
           <ThemedText type="subtitle" style={{ textAlign: "left" }}>
             Successfully Upload
@@ -141,19 +149,29 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <Header title="Upload Cloth" />
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
-        <ThemedText type="subtitle" style={{ textAlign: "left" }}>
-          Upload Outfit
-        </ThemedText>
-        {/* <TextInput
-          ref={itemNameRef} // 設定 ref
-          style={styles.input}
-          placeholder="Enter item name"
-          onChangeText={(e) => (itemNameRef.current.value = e)}
-        /> */}
+        <View style={styles.infoContainer}>
+          <ThemedText style={styles.infoTitle}>📌 How it works</ThemedText>
+          <ThemedText style={styles.infoText}>
+            1. Accept any photo with clothes.
+          </ThemedText>
+          <ThemedText style={styles.infoText}>
+            2. Crop them into individual items.
+          </ThemedText>
+          <ThemedText style={styles.infoText}>
+            3. Remove BG and auto-scaling.
+          </ThemedText>
+          <ThemedText style={styles.infoText}>
+            4. Name and tag items.
+          </ThemedText>
+          <ThemedText style={styles.infoText}>
+            5. Saved all items to your closet.
+          </ThemedText>
+        </View>
 
         {image && <Image source={{ uri: image.uri }} style={styles.image} />}
 
@@ -185,16 +203,13 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    display: "flex",
-    justifyContent: "space-evenly",
-    padding: 16,
+    padding: 24,
   },
   scrollContainer: {
-    padding: 8,
     gap: 16,
   },
   image: {
-    width: Dimensions.get("window").width - 32,
+    width: Dimensions.get("window").width - 100,
     aspectRatio: 1,
     margin: 4,
     borderRadius: 8,
@@ -242,10 +257,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   input: {
-    borderWidth: 1, // Added border width
-    borderColor: "#ccc", // Added border color
-    padding: 10, // Added padding
-    borderRadius: 8, // Added border radius
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    borderRadius: 8,
   },
   card: {
     padding: 16,
@@ -277,6 +292,20 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   badgeText: {
+    fontSize: 14,
+  },
+  infoContainer: {
+    backgroundColor: "#F0F0F5",
+    borderRadius: 12,
+    padding: 16,
+  },
+  infoTitle: {
+    fontWeight: "bold",
+    marginBottom: 8,
+    fontSize: 18,
+  },
+  infoText: {
+    marginBottom: 4,
     fontSize: 14,
   },
 });
