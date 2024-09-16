@@ -9,18 +9,15 @@ import {
 import { ThemedView } from "@/components/ThemedView";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import Header from "@/components/Header";
 
 export default function HomeScreen() {
   const router = useRouter();
   return (
     <ThemedView style={styles.container}>
       <ScrollView>
-        <View style={styles.header}>
-          <Text style={styles.title}>My Home</Text>
-          <Ionicons name="search-outline" size={24} color="#000" />
-        </View>
-        <Text style={styles.welcome}>Hi, welcome home Mrs. Chen!</Text>
+        <Header title="My Home" text="Hi, welcome home Mrs. Chen!"></Header>
 
         <Text style={styles.sectionTitle}>💡 Ideas</Text>
         <View style={styles.mainFunctions}>
@@ -45,19 +42,25 @@ export default function HomeScreen() {
 
         <Text style={styles.sectionTitle}>🤟 My Place</Text>
         <View style={styles.updateFunctions}>
-          
-          <TouchableOpacity style={styles.updateButton}>
-            <MaterialCommunityIcons name="wardrobe-outline" size={24} color="#000" onPress={() => router.push("/(tabs)/closet")} />
-            <Text>My Wardrobe</Text>
+          <TouchableOpacity
+            style={styles.updateButton}
+            onPress={() => router.push("/closet")}
+          >
+            <MaterialCommunityIcons
+              name="wardrobe-outline"
+              size={24}
+              color="#000"
+            />
+            <Text>My Closet</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.updateButton}>
             <Ionicons name="cloud-upload-outline" size={24} color="#000" />
-            <Text>Upload cloth</Text>
+            <Text>Upload Cloth</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.updateButton}>
             <Ionicons name="person-outline" size={24} color="#000" />
-            <Text>Upload image</Text>
+            <Text>Upload Image</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.updateButton}>
             <Ionicons name="person-circle-outline" size={24} color="#000" />
@@ -73,20 +76,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-  welcome: {
-    fontSize: 16,
-    marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 18,

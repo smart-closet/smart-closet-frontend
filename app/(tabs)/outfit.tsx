@@ -8,6 +8,7 @@ import {
   Platform,
   ActivityIndicator,
   Switch,
+  Text,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
@@ -16,6 +17,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useItems } from "@/hooks/useItems";
 import { Picker } from "@react-native-picker/picker";
+import Header from "@/components/Header";
 
 interface OutfitSuggestion {
   top: string;
@@ -51,7 +53,7 @@ export default function OutfitScreen() {
     OutfitSuggestion[]
   >([]);
   const [images, setImages] = useState<string[]>([]);
-  const [showImages, setShowImages] = useState(false);
+  const [considerItem, setConsiderItem] = useState(false);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -121,7 +123,7 @@ export default function OutfitScreen() {
         let filteredSuggestions = suggestions;
 
         // Only filter if an item is selected
-        if (selectedItem) {
+        if (selectedItem && considerItem) {
           filteredSuggestions = suggestions.filter(
             (suggestion) =>
               suggestion.top.image_url === selectedItem ||
@@ -162,64 +164,43 @@ export default function OutfitScreen() {
     }
   };
 
-  const toggleImageSection = () => {
-    if (images.length > 0) {
-      setShowImages(!showImages);
-    }
-  };
-
   const buttonColor = isDarkMode ? "#FFFFFF" : "#000000"; // 修改按鈕顏色為黑白
 
   return (
-    <ThemedView style={{ flex: 1 }}>
+    <ThemedView style={{ flex: 1, padding: 24 }}>
+      <Header title="Outfit" />
       <ScrollView showsVerticalScrollIndicator={false}>
-        <ThemedView style={styles.cardContainer}>
-          <ThemedView style={[styles.card, isDarkMode && styles.cardDark]}>
-            <Picker
-              dropdownIconColor={isDarkMode ? "#FFFFFF" : "#000000"}
-              selectedValue={occasion}
-              onValueChange={(itemValue) => setOccasion(itemValue)}
-              style={[styles.input, isDarkMode && styles.inputDark]}
-            >
-              {occasions.map((occ) => (
-                <Picker.Item key={occ} label={occ} value={occ} />
-              ))}
-            </Picker>
+        <ThemedView>
+          <Text style={styles.sectionTitle}>📌 Choose Occasion</Text>
+          <Picker
+            dropdownIconColor={isDarkMode ? "#FFFFFF" : "#000000"}
+            selectedValue={occasion}
+            onValueChange={(itemValue) => setOccasion(itemValue)}
+            style={[styles.input, isDarkMode && styles.inputDark]}
+          >
+            {occasions.map((occ) => (
+              <Picker.Item key={occ} label={occ} value={occ} />
+            ))}
+          </Picker>
 
-            {/* <Picker
-              selectedValue={outfitStyle}
-              onValueChange={(itemValue) => setOutfitStyle(itemValue)}
-              style={[styles.input, isDarkMode && styles.inputDark]}
-            >
-              {outfitStyles.map((style) => (
-                <Picker.Item key={style} label={style} value={style} />
-              ))}
-            </Picker> */}
+          <ThemedView style={styles.toggleContainer}>
+            <ThemedText style={[styles.sectionTitle, { marginBottom: 0 }]}>
+              📌 Consider Weather
+            </ThemedText>
+            <Switch
+              value={considerWeather}
+              onValueChange={setConsiderWeather}
+              thumbColor={"#CCCCCC"}
+              {...Platform.select({
+                web: {
+                  activeThumbColor: "black",
+                },
+              })}
+              trackColor={{ false: "#CCCCCC", true: "#CCCCCC" }}
+            />
+          </ThemedView>
 
-            {/* <TextInput
-              placeholder="Weather (e.g., sunny, rainy)"
-              value={weather}
-              onChangeText={setWeather}
-              style={[styles.input, isDarkMode && styles.inputDark]}
-              placeholderTextColor={isDarkMode ? "#999999" : "#666666"}
-            /> */}
-
-            <ThemedView style={styles.toggleContainer}>
-              <ThemedText>Consider Weather:</ThemedText>
-              <Switch
-                value={considerWeather}
-                onValueChange={setConsiderWeather}
-                thumbColor={"#CCCCCC"}
-                {...Platform.select({
-                  web: {
-                    activeThumbColor: "black",
-                  },
-                })}
-                trackColor={{ false: "#CCCCCC", true: "#CCCCCC" }}
-              />
-            </ThemedView>
-
-            {weatherData && (
+          {weatherData && (
             <ThemedView
               style={[
                 styles.card,
@@ -232,9 +213,7 @@ export default function OutfitScreen() {
                   <ThemedText style={styles.weatherTitle}>
                     {weatherData.weather[0].description}
                   </ThemedText>
-                  <ThemedText>
-                    {weatherData.main.feels_like} °C
-                  </ThemedText>
+                  <ThemedText>{weatherData.main.feels_like} °C</ThemedText>
                 </ThemedView>
                 <Image
                   source={{
@@ -248,142 +227,138 @@ export default function OutfitScreen() {
             </ThemedView>
           )}
 
-            <ThemedView style={styles.buttonContainer}>
+          <ThemedView style={styles.buttonContainer}>
+            <Text style={styles.sectionTitle}>📌 Specify Top or Bottom</Text>
+            <Switch
+              value={considerItem}
+              onValueChange={setConsiderItem}
+              thumbColor={"#CCCCCC"}
+              {...Platform.select({
+                web: {
+                  activeThumbColor: "black",
+                },
+              })}
+              trackColor={{ false: "#CCCCCC", true: "#CCCCCC" }}
+            />
+          </ThemedView>
+
+          {considerItem && images.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginBottom: 16 }}
+            >
+              <ThemedView style={styles.imageContainer}>
+                {images.map((img, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() =>
+                      setSelectedItem(img === selectedItem ? null : img)
+                    }
+                  >
+                    <Image
+                      source={{ uri: img }}
+                      style={[
+                        styles.thumbnailImage,
+                        img === selectedItem && styles.selectedThumbnail,
+                      ]}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </ThemedView>
+            </ScrollView>
+          )}
+
+          {selectedItem && considerItem && (
+            <ThemedView style={styles.selectedImageContainer}>
+              <Image
+                source={{ uri: selectedItem }}
+                style={styles.selectedImage}
+              />
               <TouchableOpacity
-                style={[
-                  styles.button,
-                  { borderColor: buttonColor },
-                  styles.halfButton,
-                ]}
-                onPress={toggleImageSection}
+                style={styles.clearButton}
+                onPress={() => setSelectedItem(null)}
               >
-                <ThemedText
-                  type="default"
-                  style={[styles.buttonText, { color: buttonColor }]}
-                >
-                  {showImages ? "Hide Items" : "Select Item"}
-                </ThemedText>
+                <Ionicons
+                  name="close-circle"
+                  size={30}
+                  color={isDarkMode ? "#FFFFFF" : "#000000"}
+                />
               </TouchableOpacity>
             </ThemedView>
+          )}
 
-            {showImages && images.length > 0 && (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.marginBottom}
-              >
-                <ThemedView style={styles.imageContainer}>
-                  {images.map((img, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      onPress={() =>
-                        setSelectedItem(img === selectedItem ? null : img)
-                      }
-                    >
-                      <Image
-                        source={{ uri: img }}
-                        style={[
-                          styles.thumbnailImage,
-                          img === selectedItem && styles.selectedThumbnail,
-                        ]}
-                      />
-                    </TouchableOpacity>
-                  ))}
-                </ThemedView>
-              </ScrollView>
-            )}
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: buttonColor }]}
+            onPress={generateOutfit}
+          >
+            <ThemedText style={[{ color: "white" }]}>
+              Generate Outfit
+            </ThemedText>
+          </TouchableOpacity>
 
-            {selectedItem && (
-              <ThemedView style={styles.selectedImageContainer}>
-                <Image
-                  source={{ uri: selectedItem }}
-                  style={styles.selectedImage}
-                />
-                <TouchableOpacity
-                  style={styles.clearButton}
-                  onPress={() => setSelectedItem(null)}
-                >
-                  <Ionicons
-                    name="close-circle"
-                    size={30}
-                    color={isDarkMode ? "#FFFFFF" : "#000000"}
-                  />
-                </TouchableOpacity>
-              </ThemedView>
-            )}
+          {loading && (
+            <ThemedView style={[styles.loadingContainer]}>
+              <ActivityIndicator size="large" color="#000000" />
+              <ThemedText style={styles.loadingText}>Loading...</ThemedText>
+            </ThemedView>
+          )}
 
-            <TouchableOpacity
-              style={[styles.button, { borderColor: buttonColor }]}
-              onPress={generateOutfit}
+          {errorMsg ?? (
+            <ThemedText style={styles.errorText}>{errorMsg}</ThemedText>
+          )}
+
+          {outfitSuggestions.length > 0 && (
+            <ThemedView
+              style={[
+                styles.outfitContainer,
+                isDarkMode && styles.outfitContainerDark,
+              ]}
             >
-              <ThemedText style={[styles.buttonText, { color: buttonColor }]}>
-                Generate Outfit
-              </ThemedText>
-            </TouchableOpacity>
-
-            {loading && (
-              <ThemedView style={[styles.loadingContainer]}>
-                <ActivityIndicator size="large" color="#000000" />
-                <ThemedText style={styles.loadingText}>Loading...</ThemedText>
-              </ThemedView>
-            )}
-
-            {errorMsg ?? (
-              <ThemedText style={styles.errorText}>{errorMsg}</ThemedText>
-            )}
-
-            {outfitSuggestions.length > 0 && (
-              <ThemedView
-                style={[
-                  styles.outfitContainer,
-                  isDarkMode && styles.outfitContainerDark,
-                ]}
-              >
-                {outfitSuggestions[0].top === "" &&
-                outfitSuggestions[0].bottom === "" ? (
-                  <ThemedText style={styles.noSuggestionsText}>
-                    Try get more cloth
-                  </ThemedText>
-                ) : (
-                  outfitSuggestions.map((suggestion, index) => (
-                    <ThemedView key={index} style={styles.suggestionItem}>
-                      <ThemedView style={styles.suggestionHeader}>
-                        <ThemedText style={styles.outfitNumber}>
-                          Outfit {index + 1}
+              {outfitSuggestions[0].top === "" &&
+              outfitSuggestions[0].bottom === "" ? (
+                <ThemedText style={styles.noSuggestionsText}>
+                  Try get more cloth
+                </ThemedText>
+              ) : (
+                outfitSuggestions.map((suggestion, index) => (
+                  <ThemedView key={index} style={styles.suggestionItem}>
+                    <ThemedView style={styles.suggestionHeader}>
+                      <ThemedText style={styles.outfitNumber}>
+                        Outfit {index + 1}
+                      </ThemedText>
+                      <ThemedView style={styles.scoreContainer}>
+                        <Ionicons name="star" size={12} color="#FFD700" />
+                        <ThemedText style={styles.scoreText}>
+                          {(suggestion.score * 100).toFixed(0)}
                         </ThemedText>
-                        <ThemedView style={styles.scoreContainer}>
-                          <Ionicons name="star" size={12} color="#FFD700" />
-                          <ThemedText style={styles.scoreText}>
-                            {(suggestion.score * 100).toFixed(0)}
-                          </ThemedText>
-                        </ThemedView>
-                      </ThemedView>
-                      <ThemedView style={styles.outfitDetails}>
-                        <ThemedView style={styles.outfitItemContainer}>
-                          <Image
-                            source={{ uri: suggestion.outfitImages[0] }}
-                            style={styles.outfitImage}
-                          />
-                          <ThemedText style={styles.itemName}>
-                            {suggestion.top}
-                          </ThemedText>
-                        </ThemedView>
-                        <ThemedView style={styles.outfitItemContainer}>
-                          <Image
-                            source={{ uri: suggestion.outfitImages[1] }}
-                            style={styles.outfitImage}
-                          />
-                          <ThemedText style={styles.itemName}>
-                            {suggestion.bottom}
-                          </ThemedText>
-                        </ThemedView>
                       </ThemedView>
                     </ThemedView>
-                  ))
-                )}
-              </ThemedView>
-            )}
-          </ThemedView>
+                    <ThemedView style={styles.outfitDetails}>
+                      <ThemedView style={styles.outfitItemContainer}>
+                        <Image
+                          source={{ uri: suggestion.outfitImages[0] }}
+                          style={styles.outfitImage}
+                        />
+                        <ThemedText style={styles.itemName}>
+                          {suggestion.top}
+                        </ThemedText>
+                      </ThemedView>
+                      <ThemedView style={styles.outfitItemContainer}>
+                        <Image
+                          source={{ uri: suggestion.outfitImages[1] }}
+                          style={styles.outfitImage}
+                        />
+                        <ThemedText style={styles.itemName}>
+                          {suggestion.bottom}
+                        </ThemedText>
+                      </ThemedView>
+                    </ThemedView>
+                  </ThemedView>
+                ))
+              )}
+            </ThemedView>
+          )}
         </ThemedView>
       </ScrollView>
     </ThemedView>
@@ -406,10 +381,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
   },
-  cardContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
   card: {
     backgroundColor: "transparent", // 移除灰色背景
     borderRadius: 12,
@@ -422,10 +393,7 @@ const styles = StyleSheet.create({
     padding: 12,
     alignItems: "center",
     borderRadius: 8,
-    borderWidth: 1, // Added border width
-  },
-  buttonText: {
-    fontSize: 16,
+    borderWidth: 1,
   },
   selectedImage: {
     width: "100%",
@@ -475,11 +443,8 @@ const styles = StyleSheet.create({
   halfButton: {
     flex: 1,
   },
-  marginBottom: {
-    marginBottom: 16,
-  },
   input: {
-    marginBottom: 16,
+    marginBottom: 24,
     padding: Platform.OS === "ios" ? 10 : 0,
     borderRadius: 5,
     backgroundColor: "#FFFFFF",
@@ -495,9 +460,9 @@ const styles = StyleSheet.create({
     borderColor: "#555555",
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
+    fontSize: 18,
+    fontWeight: "semibold",
+    marginBottom: 14,
   },
   suggestionItem: {
     marginBottom: 24,
@@ -544,7 +509,7 @@ const styles = StyleSheet.create({
   },
   selectedImageContainer: {
     position: "relative",
-    marginBottom: 16,
+    margin: 16,
   },
   clearButton: {
     position: "absolute",
@@ -566,14 +531,15 @@ const styles = StyleSheet.create({
   },
   toggleContainer: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    verticalAlign: "middle",
+    alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 16,
   },
   weatherCard: {
     paddingHorizontal: 24,
     borderWidth: 1,
-    marginBottom: 16,
+    marginBottom: 24,
   },
   weatherHeader: {
     display: "flex",

@@ -12,6 +12,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Item, useItems } from "@/hooks/useItems";
 import { useRouter } from "expo-router";
+import Header from "@/components/Header";
 
 interface CardProps {
   title: string;
@@ -97,6 +98,7 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <Header title="My Closet" />
       <ScrollView showsVerticalScrollIndicator={false}>
         {categories.map((category, index) => (
           <Card key={index} {...category} />
@@ -109,9 +111,9 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 24
   },
   cardContainer: {
-    paddingHorizontal: 16,
     paddingBottom: 16,
   },
   card: {
