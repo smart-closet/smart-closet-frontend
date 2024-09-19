@@ -13,6 +13,7 @@ import React from "react";
 import { Provider } from "react-redux";
 import store from "@/store";
 import { useItems } from "@/hooks/useItems";
+import { useMyImages } from "@/hooks/useMyImages";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -20,12 +21,15 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const { getItems } = useItems();
+  const { getMyImages } = useMyImages();
 
   useEffect(() => {
     const fetchItems = async () => {
       try {
         const fetchedItems = await getItems();
+        const fetchedMyImages = await getMyImages();
         store.dispatch({ type: 'SET_ITEMS', payload: fetchedItems });
+        store.dispatch({ type: 'SET_MY_IMAGES', payload: fetchedMyImages });
       } catch (error) {
         console.error("Error fetching items:", error);
       }

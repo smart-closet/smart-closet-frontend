@@ -18,6 +18,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { useRouter } from "expo-router";
 import Header from "@/components/Header";
 import { MyImage, useMyImages } from "@/hooks/useMyImages";
+import store from "@/store";
 
 export default function UploadMyImageScreen() {
   const colorScheme = useColorScheme();
@@ -68,6 +69,7 @@ export default function UploadMyImageScreen() {
       if (image) {
         const response = await createMyImage(image);
         setRes(response);
+        store.dispatch({ type: "ADD_MY_IMAGE", payload: response });
       } else {
         Alert.alert("Error", "Image data is not available.");
       }

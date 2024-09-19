@@ -64,6 +64,15 @@ export default function TabLayout() {
           tabBarIconStyle: { marginBottom: -4 },
         }}
       />
+      <Tabs.Screen
+        name="account"
+        options={{
+          title: "Account",
+          tabBarIcon: ({ focused }) => (
+            <TabBarIcon name={focused ? "person-circle" : "person-circle-outline"} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

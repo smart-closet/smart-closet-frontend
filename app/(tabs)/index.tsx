@@ -68,10 +68,6 @@ export default function HomeScreen() {
             <Ionicons name="person-outline" size={24} color="#000" />
             <Text>Upload Image</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.updateButton}>
-            <Ionicons name="person-circle-outline" size={24} color="#000" />
-            <Text>Personal Profile</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </ThemedView>
