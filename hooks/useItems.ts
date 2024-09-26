@@ -42,6 +42,15 @@ interface OutfitSuggestionParams {
   item_id?: number;
 }
 
+
+
+interface ScenarioSuggestionParams {
+    user_scenario: string;
+}
+
+
+
+
 // Define return types for the CRUD operations
 interface UseItemsReturn {
   getItems: () => Promise<Item[]>;
@@ -51,11 +60,21 @@ interface UseItemsReturn {
   deleteItem: (id: number) => Promise<void>;
   getOutfitSuggestions: (
     params: OutfitSuggestionParams
-  ) => Promise<OutfitPair[]>;
+    ) => Promise<OutfitPair[]>;
+  getOutfitSuggestionsBySpeak: (params: ScenarioSuggestionParams) => Promise<OutfitPair[]>;
 }
 
 // Custom hook to handle item CRUD operations
 export const useItems = (): UseItemsReturn => {
+
+  const getOutfitSuggestionsBySpeak = async (
+        params: ScenarioSuggestionParams
+    ): Promise<OutfitPair[]> => {
+        return await api.post(`scenario/`, {
+            user_scenario: params.user_scenario,
+        });
+  };
+
   const getItems = async () => {
     return await api.get("items");
   };
@@ -110,5 +129,6 @@ export const useItems = (): UseItemsReturn => {
     updateItem,
     deleteItem,
     getOutfitSuggestions,
+    getOutfitSuggestionsBySpeak
   };
 };
