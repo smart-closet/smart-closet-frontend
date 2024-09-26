@@ -25,6 +25,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useOutfits } from "@/hooks/useOutfits";
+import { router } from "expo-router";
 
 interface OutfitSuggestion {
   top: Item;
@@ -445,14 +446,16 @@ export default function OutfitScreen() {
                         <ThemedView style={styles.scoreContainer}>
                           <TouchableOpacity
                             style={styles.scoreText}
-                            onPress={() =>
-                              createOutfit([
-                                suggestion.top.id,
-                                suggestion.bottom.id,
-                              ])
-                            }
-                            // disable if [suggestion.top.id, suggestion.bottom.id] is in outfits
-                            disabled={checkIfOutfitExists(suggestion)}
+                            onPress={() => {
+                              if (checkIfOutfitExists(suggestion)) {
+                                router.push("/try-on");
+                              } else {
+                                createOutfit([
+                                  suggestion.top.id,
+                                  suggestion.bottom.id,
+                                ]);
+                              }
+                            }}
                           >
                             <ThemedText style={{ fontSize: 12 }}>
                               {checkIfOutfitExists(suggestion)

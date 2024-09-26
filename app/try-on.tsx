@@ -16,7 +16,7 @@ import { Item } from "@/hooks/useItems";
 import Header from "@/components/Header";
 import { api } from "@/hooks/api";
 import { MyImage } from "@/hooks/useMyImages";
-import { RootState } from "@/store";
+import { Outfit, RootState } from "@/store";
 
 interface CardProps {
   title: string;
@@ -53,7 +53,16 @@ const Card: React.FC<CardProps> = ({
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <ThemedView style={styles.imageContainer}>
             {items.map((item, index) => (
-              <TouchableOpacity key={index} onPress={() => onSelect(item)}>
+              <TouchableOpacity
+                key={index}
+                onPress={() => {
+                  if (selected && selected.id == item.id) {
+                    onSelect(null);
+                  } else {
+                    onSelect(item);
+                  }
+                }}
+              >
                 <Image
                   source={{ uri: item.image_url }}
                   style={styles.cardImage}
@@ -86,6 +95,7 @@ export default function TryOnScreen() {
   const [selectedTop, setSelectedTop] = useState<Item | null>(null);
   const [selectedBottom, setSelectedBottom] = useState<Item | null>(null);
   const [selectedMyImage, setSelectedMyImage] = useState<MyImage | null>(null);
+  const [selectedOutfit, setSelectedOutfit] = useState<Outfit | null>(null);
 
   const [result, setResult] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -109,13 +119,17 @@ export default function TryOnScreen() {
 
   const tryOn = async () => {
     setLoading(true);
+    const topAndBottom = selectedOutfit
+      ? selectedOutfit.items
+          .sort((a, b) => a.category_id - b.category_id)
+          .map((item) => item.image_url)
+      : [selectedTop, selectedBottom].filter(Boolean);
+
     const response = await api.post(
       "try-on",
-      [
-        selectedMyImage && selectedMyImage.image_url,
-        selectedTop && selectedTop.image_url,
-        selectedBottom && selectedBottom.image_url,
-      ].filter(Boolean)
+      [...topAndBottom, selectedMyImage && selectedMyImage.image_url].filter(
+        Boolean
+      )
     );
     console.log("Try on response:", response);
     setResult(response.result);
@@ -158,49 +172,6 @@ export default function TryOnScreen() {
               <ThemedView style={[styles.card, isDarkMode && styles.cardDark]}>
                 <ThemedView style={styles.cardHeader}>
                   <Ionicons
-                    name={"man-outline"}
-                    size={28}
-                    style={styles.cardIcon}
-                  />
-                  <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
-                    {"My Images"}
-                  </ThemedText>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={20}
-                    color={isDarkMode ? "#A1A1A6" : "#8E8E93"}
-                  />
-                </ThemedView>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <ThemedView style={styles.imageContainer}>
-                    {myImages.map((item, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        onPress={() => setSelectedMyImage(item)}
-                      >
-                        <Image
-                          source={{ uri: item.image_url }}
-                          style={styles.cardImage}
-                        />
-                        {selectedMyImage && selectedMyImage.id == item.id && (
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={20}
-                            color="#000000"
-                            style={styles.checkIcon}
-                          />
-                        )}
-                      </TouchableOpacity>
-                    ))}
-                  </ThemedView>
-                </ScrollView>
-              </ThemedView>
-            </ThemedView>
-
-            <ThemedView style={styles.cardContainer}>
-              <ThemedView style={[styles.card, isDarkMode && styles.cardDark]}>
-                <ThemedView style={styles.cardHeader}>
-                  <Ionicons
                     name={"shirt-outline"}
                     size={28}
                     style={styles.cardIcon}
@@ -221,7 +192,33 @@ export default function TryOnScreen() {
                         {outfit.items
                           .sort((a, b) => a.category_id - b.category_id)
                           .map((item, index) => (
-                            <TouchableOpacity key={index}>
+                            <TouchableOpacity
+                              key={index}
+                              onPress={() => {
+                                if (
+                                  selectedOutfit &&
+                                  selectedOutfit.id == outfit.id
+                                ) {
+                                  setSelectedOutfit(null);
+                                } else {
+                                  setSelectedOutfit(outfit);
+                                }
+                              }}
+                            >
+                              {selectedOutfit &&
+                                selectedOutfit.id == outfit.id && (
+                                  <Ionicons
+                                    name="checkmark-circle"
+                                    size={20}
+                                    color="#000000"
+                                    style={{
+                                      position: "absolute",
+                                      top: 0,
+                                      right: 0,
+                                      zIndex: 1,
+                                    }}
+                                  />
+                                )}
                               <Image
                                 source={{ uri: item.image_url }}
                                 style={styles.cardImage}
@@ -229,6 +226,58 @@ export default function TryOnScreen() {
                             </TouchableOpacity>
                           ))}
                       </ThemedView>
+                    ))}
+                  </ThemedView>
+                </ScrollView>
+              </ThemedView>
+            </ThemedView>
+
+            <ThemedView style={styles.cardContainer}>
+              <ThemedView style={[styles.card, isDarkMode && styles.cardDark]}>
+                <ThemedView style={styles.cardHeader}>
+                  <Ionicons
+                    name={"man-outline"}
+                    size={28}
+                    style={styles.cardIcon}
+                  />
+                  <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
+                    {"My Images"}
+                  </ThemedText>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={isDarkMode ? "#A1A1A6" : "#8E8E93"}
+                  />
+                </ThemedView>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <ThemedView style={styles.imageContainer}>
+                    {myImages.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() => {
+                          if (
+                            selectedMyImage &&
+                            selectedMyImage.id == item.id
+                          ) {
+                            setSelectedMyImage(null);
+                          } else {
+                            setSelectedMyImage(item);
+                          }
+                        }}
+                      >
+                        <Image
+                          source={{ uri: item.image_url }}
+                          style={styles.cardImage}
+                        />
+                        {selectedMyImage && selectedMyImage.id == item.id && (
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={20}
+                            color="#000000"
+                            style={styles.checkIcon}
+                          />
+                        )}
+                      </TouchableOpacity>
                     ))}
                   </ThemedView>
                 </ScrollView>
