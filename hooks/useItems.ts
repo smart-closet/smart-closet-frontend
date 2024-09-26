@@ -40,6 +40,7 @@ interface OutfitSuggestionParams {
   latitude: number;
   longitude: number;
   item_id?: number;
+  voice_occasion?: string;
 }
 
 // Define return types for the CRUD operations
@@ -51,7 +52,7 @@ interface UseItemsReturn {
   deleteItem: (id: number) => Promise<void>;
   getOutfitSuggestions: (
     params: OutfitSuggestionParams
-  ) => Promise<OutfitPair[]>;
+    ) => Promise<OutfitPair[]>;
 }
 
 // Custom hook to handle item CRUD operations
@@ -100,6 +101,7 @@ export const useItems = (): UseItemsReturn => {
       consider_weather: params.consider_weather,
       user_occation: params.user_occation,
       item_id: params.item_id,
+      voice_occasion: params.voice_occasion,
     });
   };
 
