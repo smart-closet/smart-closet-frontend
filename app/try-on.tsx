@@ -123,13 +123,15 @@ export default function TryOnScreen() {
       ? selectedOutfit.items
           .sort((a, b) => a.category_id - b.category_id)
           .map((item) => item.image_url)
-      : [selectedTop, selectedBottom].filter(Boolean);
+      : [selectedTop?.image_url || "", selectedBottom?.image_url || ""];
 
     const response = await api.post(
       "try-on",
-      [...topAndBottom, selectedMyImage && selectedMyImage.image_url].filter(
-        Boolean
-      )
+      {
+        human_url: selectedMyImage?.image_url,
+        top_url: topAndBottom[0],
+        bottom_url: topAndBottom[1],
+      }
     );
     console.log("Try on response:", response);
     setResult(response.result);
@@ -150,7 +152,7 @@ export default function TryOnScreen() {
           style={[styles.uploadButton]}
           onPress={() => setResult("")}
         >
-          <ThemedText style={styles.uploadButtonText}>
+          <ThemedText style={styles.uploadButtonText} disabled={selectedMyImage == null}>
             {"Try On Another Items"}
           </ThemedText>
         </TouchableOpacity>
