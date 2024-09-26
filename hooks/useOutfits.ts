@@ -1,3 +1,4 @@
+import store from "@/store";
 import { api } from "./api";
 import { Item } from "./useItems";
 
@@ -17,7 +18,10 @@ interface UseItemsReturn {
 
 export const useOutfits = (): UseItemsReturn => {
   const createOutfit = async (item_ids: number[]) => {
-    return await api.post("outfits", { item_ids });
+    const outfit = await api.post("outfits", { item_ids })
+    store.dispatch({ type: 'ADD_OUTFIT', payload: outfit });
+
+    return outfit;
   };
 
   const updateOutfit = async (id: number, outfit: Outfit) => {

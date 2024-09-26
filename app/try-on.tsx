@@ -81,6 +81,8 @@ export default function TryOnScreen() {
   const isDarkMode = colorScheme === "dark";
 
   const myImages = useSelector((state: RootState) => state.myImages);
+  const outfits = useSelector((state: RootState) => state.outfits);
+
   const [selectedTop, setSelectedTop] = useState<Item | null>(null);
   const [selectedBottom, setSelectedBottom] = useState<Item | null>(null);
   const [selectedMyImage, setSelectedMyImage] = useState<MyImage | null>(null);
@@ -189,6 +191,44 @@ export default function TryOnScreen() {
                           />
                         )}
                       </TouchableOpacity>
+                    ))}
+                  </ThemedView>
+                </ScrollView>
+              </ThemedView>
+            </ThemedView>
+
+            <ThemedView style={styles.cardContainer}>
+              <ThemedView style={[styles.card, isDarkMode && styles.cardDark]}>
+                <ThemedView style={styles.cardHeader}>
+                  <Ionicons
+                    name={"shirt-outline"}
+                    size={28}
+                    style={styles.cardIcon}
+                  />
+                  <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
+                    Outfits
+                  </ThemedText>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={isDarkMode ? "#A1A1A6" : "#8E8E93"}
+                  />
+                </ThemedView>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <ThemedView style={styles.imageContainer}>
+                    {outfits.map((outfit, index) => (
+                      <ThemedView key={index}>
+                        {outfit.items
+                          .sort((a, b) => a.category_id - b.category_id)
+                          .map((item, index) => (
+                            <TouchableOpacity key={index}>
+                              <Image
+                                source={{ uri: item.image_url }}
+                                style={styles.cardImage}
+                              />
+                            </TouchableOpacity>
+                          ))}
+                      </ThemedView>
                     ))}
                   </ThemedView>
                 </ScrollView>

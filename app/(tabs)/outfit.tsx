@@ -58,6 +58,7 @@ export default function OutfitScreen() {
     OutfitSuggestion[]
   >([]);
   const items = useSelector((state: RootState) => state.items);
+  const outfits = useSelector((state: RootState) => state.outfits);
   const [considerItem, setConsiderItem] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [loading, setLoading] = useState(false);
@@ -194,21 +195,15 @@ export default function OutfitScreen() {
     setLoading(false);
   };
 
-  const handleAddOutfit = async (itemIds: []) => {
-    if (selectedItem) {
-      try {
-        const outfit = await createOutfit(itemIds);
-        Alert.alert("Outfit added successfully!", `Outfit ID: ${outfit[0].id}`);
-      } catch (error) {
-        console.error("Error adding outfit:", error);
-        Alert.alert("Error", "Failed to add outfit.");
-      }
-    } else {
-      Alert.alert(
-        "No item selected",
-        "Please select an item to add to the outfit."
-      );
-    }
+  const checkIfOutfitExists = (suggestion: OutfitSuggestion) => {
+    const outfitIds = outfits.map((outfit) =>
+      outfit.items.map((item) => item.id)
+    );
+    return outfitIds.some(
+      (outfit) =>
+        outfit.includes(suggestion.top.id) &&
+        outfit.includes(suggestion.bottom.id)
+    );
   };
 
   const buttonColor = isDarkMode ? "#FFFFFF" : "#000000"; // 修改按鈕顏色為黑白
@@ -450,9 +445,20 @@ export default function OutfitScreen() {
                         <ThemedView style={styles.scoreContainer}>
                           <TouchableOpacity
                             style={styles.scoreText}
-                            onPress={() => createOutfit([suggestion.top.id, suggestion.bottom.id])}
+                            onPress={() =>
+                              createOutfit([
+                                suggestion.top.id,
+                                suggestion.bottom.id,
+                              ])
+                            }
+                            // disable if [suggestion.top.id, suggestion.bottom.id] is in outfits
+                            disabled={checkIfOutfitExists(suggestion)}
                           >
-                            <ThemedText style={{ fontSize: 12 }}>try on</ThemedText>
+                            <ThemedText style={{ fontSize: 12 }}>
+                              {checkIfOutfitExists(suggestion)
+                                ? "try on"
+                                : "add"}
+                            </ThemedText>
                           </TouchableOpacity>
                         </ThemedView>
 
