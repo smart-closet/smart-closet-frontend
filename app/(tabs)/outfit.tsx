@@ -24,9 +24,11 @@ import Header from "@/components/Header";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useOutfits } from "@/hooks/useOutfits";
+
 interface OutfitSuggestion {
-  top: string;
-  bottom: string;
+  top: Item;
+  bottom: Item;
   outfitImages: string[];
   score: number;
 }
@@ -49,8 +51,6 @@ export default function OutfitScreen() {
     "Wedding_Guest",
   ];
   const [occasion, setOccasion] = useState("Daily_Work_and_Conference");
-  // const outfitStyles = ["American", "Japanese", "Korean"];
-  // const [outfitStyle, setOutfitStyle] = useState("Japanese");
   const [considerWeather, setConsiderWeather] = useState(true);
 
   // image
@@ -63,6 +63,7 @@ export default function OutfitScreen() {
   const [loading, setLoading] = useState(false);
 
   const { getOutfitSuggestions } = useItems();
+  const { createOutfit } = useOutfits();
 
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
@@ -161,56 +162,52 @@ export default function OutfitScreen() {
   }, []);
 
   const generateOutfit = async () => {
-    try {
-      setLoading(true);
-      setOutfitSuggestions([]);
+    setLoading(true);
+    setOutfitSuggestions([]);
 
-      let latitude = location?.coords.latitude;
-      let longitude = location?.coords.longitude;
+    let latitude = location?.coords.latitude;
+    let longitude = location?.coords.longitude;
 
-      const suggestions = await getOutfitSuggestions({
-        consider_weather: considerWeather,
-        user_occation: occasion,
-        latitude: latitude ?? 0,
-        longitude: longitude ?? 0,
-        item_id: selectedItem ? selectedItem.id : undefined,
-        voice_occasion: result,
-      });
+    const suggestions = await getOutfitSuggestions({
+      consider_weather: considerWeather,
+      user_occation: occasion,
+      latitude: latitude ?? 0,
+      longitude: longitude ?? 0,
+      item_id: selectedItem ? selectedItem.id : undefined,
+      voice_occasion: result,
+    });
 
-      console.log("Suggestions:", suggestions);
+    console.log("Suggestions:", suggestions);
 
-      if (suggestions.length > 0) {
-        let filteredSuggestions = suggestions;
-        const topFiveSuggestions = filteredSuggestions
-          .slice(0, 5)
-          .map((suggestion) => ({
-            top: suggestion.top.name,
-            bottom: suggestion.bottom.name,
-            outfitImages: [
-              suggestion.top.image_url,
-              suggestion.bottom.image_url,
-            ],
-            score: suggestion.score,
-          }));
-        setOutfitSuggestions(topFiveSuggestions);
+    if (suggestions.length > 0) {
+      let filteredSuggestions = suggestions;
+      const topFiveSuggestions = filteredSuggestions
+        .slice(0, 5)
+        .map((suggestion) => ({
+          ...suggestion,
+          outfitImages: [suggestion.top.image_url, suggestion.bottom.image_url],
+          score: suggestion.score,
+        }));
+      setOutfitSuggestions(topFiveSuggestions);
+    }
 
-        if (topFiveSuggestions.length === 0) {
-          setOutfitSuggestions([
-            { top: "", bottom: "", outfitImages: [], score: 0 },
-          ]);
-        }
-      } else {
-        setOutfitSuggestions([
-          { top: "", bottom: "", outfitImages: [], score: 0 },
-        ]);
+    setLoading(false);
+  };
+
+  const handleAddOutfit = async (itemIds: []) => {
+    if (selectedItem) {
+      try {
+        const outfit = await createOutfit(itemIds);
+        Alert.alert("Outfit added successfully!", `Outfit ID: ${outfit[0].id}`);
+      } catch (error) {
+        console.error("Error adding outfit:", error);
+        Alert.alert("Error", "Failed to add outfit.");
       }
-
-      setLoading(false);
-    } catch (error) {
-      console.error("Error generating outfit:", error);
-      setOutfitSuggestions([
-        { top: "", bottom: "", outfitImages: [], score: 0 },
-      ]);
+    } else {
+      Alert.alert(
+        "No item selected",
+        "Please select an item to add to the outfit."
+      );
     }
   };
 
@@ -338,8 +335,6 @@ export default function OutfitScreen() {
                   style={styles.weatherIcon}
                 />
               </ThemedView>
-              {/* <ThemedText>體感溫度: {weatherData.main.feels_like}°C</ThemedText> */}
-              {/* <ThemedText>濕度: {weatherData.main.humidity}%</ThemedText> */}
             </ThemedView>
           )}
 
@@ -439,8 +434,7 @@ export default function OutfitScreen() {
                 isDarkMode && styles.outfitContainerDark,
               ]}
             >
-              {outfitSuggestions[0].top === "" &&
-              outfitSuggestions[0].bottom === "" ? (
+              {outfitSuggestions.length === 0 ? (
                 <ThemedText style={styles.noSuggestionsText}>
                   Try get more cloth
                 </ThemedText>
@@ -451,11 +445,23 @@ export default function OutfitScreen() {
                       <ThemedText style={styles.outfitNumber}>
                         Outfit {index + 1}
                       </ThemedText>
-                      <ThemedView style={styles.scoreContainer}>
-                        <Ionicons name="star" size={12} color="#FFD700" />
-                        <ThemedText style={styles.scoreText}>
-                          {(suggestion.score * 100).toFixed(0)}
-                        </ThemedText>
+
+                      <ThemedView style={styles.suggestionHeader}>
+                        <ThemedView style={styles.scoreContainer}>
+                          <TouchableOpacity
+                            style={styles.scoreText}
+                            onPress={() => createOutfit([suggestion.top.id, suggestion.bottom.id])}
+                          >
+                            <ThemedText style={{ fontSize: 12 }}>try on</ThemedText>
+                          </TouchableOpacity>
+                        </ThemedView>
+
+                        <ThemedView style={styles.scoreContainer}>
+                          <Ionicons name="star" size={12} color="#FFD700" />
+                          <ThemedText style={styles.scoreText}>
+                            {(suggestion.score * 100).toFixed(0)}
+                          </ThemedText>
+                        </ThemedView>
                       </ThemedView>
                     </ThemedView>
                     <ThemedView style={styles.outfitDetails}>
@@ -465,7 +471,7 @@ export default function OutfitScreen() {
                           style={styles.outfitImage}
                         />
                         <ThemedText style={styles.itemName}>
-                          {suggestion.top}
+                          {suggestion.top.name}
                         </ThemedText>
                       </ThemedView>
                       <ThemedView style={styles.outfitItemContainer}>
@@ -474,7 +480,7 @@ export default function OutfitScreen() {
                           style={styles.outfitImage}
                         />
                         <ThemedText style={styles.itemName}>
-                          {suggestion.bottom}
+                          {suggestion.bottom.name}
                         </ThemedText>
                       </ThemedView>
                     </ThemedView>
@@ -604,6 +610,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 12,
+    gap: 8,
   },
   outfitNumber: {
     fontSize: 18,
