@@ -157,7 +157,7 @@ export default function OutfitScreen() {
       )
         .then((response) => response.json())
         .then((data) => data);
-
+      console.log("Temp:", temp);
       setWeatherData(temp);
       console.log("Weather:", temp);
     })();
@@ -211,7 +211,7 @@ export default function OutfitScreen() {
 
   return (
     <ThemedView style={{ flex: 1, padding: 24 }}>
-      <Header title="Outfit" />
+      <Header title="Outfit" hasGoBackBtn />
       <ScrollView showsVerticalScrollIndicator={false}>
         <ThemedText
           type="subtitle"
@@ -219,7 +219,7 @@ export default function OutfitScreen() {
           darkColor="#fff"
           style={{ marginVertical: 20 }}
         >
-          AI voice Assistent
+          AI Voice Assistant
         </ThemedText>
         <ThemedView>
           <View style={styles.inputBlock}>
@@ -271,7 +271,7 @@ export default function OutfitScreen() {
             />
             <Text style={[styles.sectionTitle, { lineHeight: 16 }]}>
               {" "}
-              Choose Occasion
+              Choose an Occasion
             </Text>
           </View>
 

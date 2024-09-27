@@ -17,7 +17,7 @@ export default function AnalysisScreen() {
   return (
     <ThemedView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Header title="My Home" hasGoBackBtn></Header>
+        <Header title="My Analysis" hasGoBackBtn></Header>
 
         <Text style={styles.sectionTitle}>👍 Top 5 Frequently Wear Clothes</Text>
 
