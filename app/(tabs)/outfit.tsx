@@ -191,6 +191,8 @@ export default function OutfitScreen() {
           score: suggestion.score,
         }));
       setOutfitSuggestions(topFiveSuggestions);
+    } else {
+      setErrorMsg("No outfit suggestions found.");
     }
 
     setLoading(false);
@@ -207,7 +209,7 @@ export default function OutfitScreen() {
     );
   };
 
-  const buttonColor = isDarkMode ? "#FFFFFF" : "#000000"; // 修改按鈕顏色為黑白
+  const buttonColor = isDarkMode ? "#FFFFFF" : "#000000";
 
   return (
     <ThemedView style={{ flex: 1, padding: 24 }}>
@@ -419,9 +421,18 @@ export default function OutfitScreen() {
             </ThemedView>
           )}
 
-          {errorMsg ?? (
-            <ThemedText style={styles.errorText}>{errorMsg}</ThemedText>
-          )}
+          {errorMsg ? (
+            <ThemedView
+              style={[
+                styles.outfitContainer,
+                isDarkMode && styles.outfitContainerDark,
+              ]}
+            >
+              <ThemedText style={styles.noSuggestionsText}>
+                {errorMsg}
+              </ThemedText>
+            </ThemedView>
+          ): null}
 
           {outfitSuggestions.length > 0 && (
             <ThemedView
@@ -430,72 +441,64 @@ export default function OutfitScreen() {
                 isDarkMode && styles.outfitContainerDark,
               ]}
             >
-              {outfitSuggestions.length === 0 ? (
-                <ThemedText style={styles.noSuggestionsText}>
-                  Try get more cloth
-                </ThemedText>
-              ) : (
-                outfitSuggestions.map((suggestion, index) => (
-                  <ThemedView key={index} style={styles.suggestionItem}>
+              {outfitSuggestions.map((suggestion, index) => (
+                <ThemedView key={index} style={styles.suggestionItem}>
+                  <ThemedView style={styles.suggestionHeader}>
+                    <ThemedText style={styles.outfitNumber}>
+                      Outfit {index + 1}
+                    </ThemedText>
+
                     <ThemedView style={styles.suggestionHeader}>
-                      <ThemedText style={styles.outfitNumber}>
-                        Outfit {index + 1}
-                      </ThemedText>
-
-                      <ThemedView style={styles.suggestionHeader}>
-                        <ThemedView style={styles.scoreContainer}>
-                          <TouchableOpacity
-                            style={styles.scoreText}
-                            onPress={() => {
-                              if (checkIfOutfitExists(suggestion)) {
-                                router.push("/try-on");
-                              } else {
-                                createOutfit([
-                                  suggestion.top.id,
-                                  suggestion.bottom.id,
-                                ]);
-                              }
-                            }}
-                          >
-                            <ThemedText style={{ fontSize: 12 }}>
-                              {checkIfOutfitExists(suggestion)
-                                ? "try on"
-                                : "add"}
-                            </ThemedText>
-                          </TouchableOpacity>
-                        </ThemedView>
-
-                        <ThemedView style={styles.scoreContainer}>
-                          <Ionicons name="star" size={12} color="#FFD700" />
-                          <ThemedText style={styles.scoreText}>
-                            {(suggestion.score * 100).toFixed(0)}
+                      <ThemedView style={styles.scoreContainer}>
+                        <TouchableOpacity
+                          style={styles.scoreText}
+                          onPress={() => {
+                            if (checkIfOutfitExists(suggestion)) {
+                              router.push("/try-on");
+                            } else {
+                              createOutfit([
+                                suggestion.top.id,
+                                suggestion.bottom.id,
+                              ]);
+                            }
+                          }}
+                        >
+                          <ThemedText style={{ fontSize: 12 }}>
+                            {checkIfOutfitExists(suggestion) ? "try on" : "add"}
                           </ThemedText>
-                        </ThemedView>
+                        </TouchableOpacity>
                       </ThemedView>
-                    </ThemedView>
-                    <ThemedView style={styles.outfitDetails}>
-                      <ThemedView style={styles.outfitItemContainer}>
-                        <Image
-                          source={{ uri: suggestion.outfitImages[0] }}
-                          style={styles.outfitImage}
-                        />
-                        <ThemedText style={styles.itemName}>
-                          {suggestion.top.name}
-                        </ThemedText>
-                      </ThemedView>
-                      <ThemedView style={styles.outfitItemContainer}>
-                        <Image
-                          source={{ uri: suggestion.outfitImages[1] }}
-                          style={styles.outfitImage}
-                        />
-                        <ThemedText style={styles.itemName}>
-                          {suggestion.bottom.name}
+
+                      <ThemedView style={styles.scoreContainer}>
+                        <Ionicons name="star" size={12} color="#FFD700" />
+                        <ThemedText style={styles.scoreText}>
+                          {(suggestion.score * 100).toFixed(0)}
                         </ThemedText>
                       </ThemedView>
                     </ThemedView>
                   </ThemedView>
-                ))
-              )}
+                  <ThemedView style={styles.outfitDetails}>
+                    <ThemedView style={styles.outfitItemContainer}>
+                      <Image
+                        source={{ uri: suggestion.outfitImages[0] }}
+                        style={styles.outfitImage}
+                      />
+                      <ThemedText style={styles.itemName}>
+                        {suggestion.top.name}
+                      </ThemedText>
+                    </ThemedView>
+                    <ThemedView style={styles.outfitItemContainer}>
+                      <Image
+                        source={{ uri: suggestion.outfitImages[1] }}
+                        style={styles.outfitImage}
+                      />
+                      <ThemedText style={styles.itemName}>
+                        {suggestion.bottom.name}
+                      </ThemedText>
+                    </ThemedView>
+                  </ThemedView>
+                </ThemedView>
+              ))}
             </ThemedView>
           )}
         </ThemedView>
