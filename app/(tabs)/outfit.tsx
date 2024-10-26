@@ -6,7 +6,6 @@ import {
   useColorScheme,
   ScrollView,
   Platform,
-  ActivityIndicator,
   Switch,
   Text,
   View,
@@ -26,6 +25,7 @@ import { RootState } from "@/store";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useOutfits } from "@/hooks/useOutfits";
 import { router } from "expo-router";
+import { Loading } from "@/components/Loading";
 
 interface OutfitSuggestion {
   top: Item;
@@ -194,8 +194,8 @@ export default function OutfitScreen() {
     } else {
       setErrorMsg("No outfit suggestions found.");
     }
-    
-    setResult('');
+
+    setResult("");
     setLoading(false);
   };
 
@@ -415,12 +415,7 @@ export default function OutfitScreen() {
             </ThemedText>
           </TouchableOpacity>
 
-          {loading && (
-            <ThemedView style={[styles.loadingContainer]}>
-              <ActivityIndicator size="large" color="#000000" />
-              <ThemedText style={styles.loadingText}>Loading...</ThemedText>
-            </ThemedView>
-          )}
+          {loading && <Loading />}
 
           {errorMsg ? (
             <ThemedView
@@ -433,7 +428,7 @@ export default function OutfitScreen() {
                 {errorMsg}
               </ThemedText>
             </ThemedView>
-          ): null}
+          ) : null}
 
           {outfitSuggestions.length > 0 && (
             <ThemedView
@@ -513,21 +508,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
-  },
-  loadingContainer: {
-    marginTop: 16,
-    padding: 10,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 5,
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "column",
-    display: "flex",
-    height: 250,
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
   },
   card: {
     backgroundColor: "transparent", // 移除灰色背景

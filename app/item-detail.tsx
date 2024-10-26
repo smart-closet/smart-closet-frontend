@@ -4,7 +4,6 @@ import {
   Image,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -12,6 +11,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { Item, useItems } from "@/hooks/useItems";
+import { Loading } from "@/components/Loading";
 
 const ItemDetailScreen = () => {
   const router = useRouter();
@@ -36,12 +36,7 @@ const ItemDetailScreen = () => {
   }, [itemId]);
 
   if (loading) {
-    return (
-      <ThemedView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#000000" />
-        <ThemedText style={styles.loadingText}>Loading...</ThemedText>
-      </ThemedView>
-    );
+    return <Loading />;
   }
 
   if (!item) {
@@ -99,15 +94,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     gap: 16,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
   },
   errorContainer: {
     flex: 1,
