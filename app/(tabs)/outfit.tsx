@@ -194,7 +194,8 @@ export default function OutfitScreen() {
     } else {
       setErrorMsg("No outfit suggestions found.");
     }
-
+    
+    setResult('');
     setLoading(false);
   };
 
