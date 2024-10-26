@@ -31,7 +31,7 @@ export function Loading() {
 
   return (
     <ThemedView style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color="#000000" />
+      <ActivityIndicator size="large" color="#000000" style={{ marginTop: 12 }} />
       <ThemedText style={styles.loadingText}>
         {jokes[currentJokeIndex]}
       </ThemedText>

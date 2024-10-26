@@ -172,7 +172,7 @@ export default function OutfitScreen() {
 
     const suggestions = await getOutfitSuggestions({
       consider_weather: considerWeather,
-      user_occation: occasion,
+      user_occasion: occasion,
       latitude: latitude ?? 0,
       longitude: longitude ?? 0,
       item_id: selectedItem ? selectedItem.id : undefined,
