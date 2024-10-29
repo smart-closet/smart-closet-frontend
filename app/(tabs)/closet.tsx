@@ -10,7 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Item, useItems } from "@/hooks/useItems";
+import { Item } from "@/hooks/useItems";
 import { useRouter } from "expo-router";
 import Header from "@/components/Header";
 import { RootState } from "@/store";
@@ -49,7 +49,9 @@ const Card: React.FC<CardProps> = ({ title, iconName, items }) => {
                 onPress={() =>
                   router.push({
                     pathname: "/item-detail",
-                    params: { itemId: encodeURIComponent(JSON.stringify(item.id)) },
+                    params: {
+                      itemId: encodeURIComponent(JSON.stringify(item.id)),
+                    },
                   })
                 }
               >
@@ -67,9 +69,11 @@ const Card: React.FC<CardProps> = ({ title, iconName, items }) => {
 };
 
 export default function HomeScreen() {
+  const items = useSelector((state: RootState) => state.items);
+  const outfits = useSelector((state: RootState) => state.outfits);
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === "dark";
-  const items = useSelector((state: RootState) => state.items);
+  const router = useRouter();
 
   const categories = [
     {
@@ -91,6 +95,54 @@ export default function HomeScreen() {
         {categories.map((category, index) => (
           <Card key={index} {...category} />
         ))}
+
+        <ThemedView style={styles.cardContainer}>
+          <ThemedView style={[styles.card, isDarkMode && styles.cardDark]}>
+            <ThemedView style={styles.cardHeader}>
+              <Ionicons
+                name={"shirt-outline"}
+                size={28}
+                style={styles.cardIcon}
+              />
+              <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
+                Outfits
+              </ThemedText>
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={isDarkMode ? "#A1A1A6" : "#8E8E93"}
+              />
+            </ThemedView>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <ThemedView style={styles.imageContainer}>
+                {outfits.map((outfit, index) => (
+                  <ThemedView key={index}>
+                    {outfit.items.sort((a, b) => a.category_id - b.category_id).map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() =>
+                          router.push({
+                            pathname: "/item-detail",
+                            params: {
+                              itemId: encodeURIComponent(
+                                JSON.stringify(item.id)
+                              ),
+                            },
+                          })
+                        }
+                      >
+                        <Image
+                          source={{ uri: item.image_url }}
+                          style={styles.cardImage}
+                        />
+                      </TouchableOpacity>
+                    ))}
+                  </ThemedView>
+                ))}
+              </ThemedView>
+            </ScrollView>
+          </ThemedView>
+        </ThemedView>
       </ScrollView>
     </ThemedView>
   );
@@ -99,7 +151,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24
+    padding: 24,
   },
   cardContainer: {
     paddingBottom: 16,

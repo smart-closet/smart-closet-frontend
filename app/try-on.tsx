@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
   Image,
   ScrollView,
   useColorScheme,
-  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
@@ -16,7 +15,8 @@ import { Item } from "@/hooks/useItems";
 import Header from "@/components/Header";
 import { api } from "@/hooks/api";
 import { MyImage } from "@/hooks/useMyImages";
-import { RootState } from "@/store";
+import { Outfit, RootState } from "@/store";
+import { Loading } from "@/components/Loading";
 
 interface CardProps {
   title: string;
@@ -53,7 +53,16 @@ const Card: React.FC<CardProps> = ({
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <ThemedView style={styles.imageContainer}>
             {items.map((item, index) => (
-              <TouchableOpacity key={index} onPress={() => onSelect(item)}>
+              <TouchableOpacity
+                key={index}
+                onPress={() => {
+                  if (selected && selected.id == item.id) {
+                    onSelect(null);
+                  } else {
+                    onSelect(item);
+                  }
+                }}
+              >
                 <Image
                   source={{ uri: item.image_url }}
                   style={styles.cardImage}
@@ -81,9 +90,12 @@ export default function TryOnScreen() {
   const isDarkMode = colorScheme === "dark";
 
   const myImages = useSelector((state: RootState) => state.myImages);
+  const outfits = useSelector((state: RootState) => state.outfits);
+
   const [selectedTop, setSelectedTop] = useState<Item | null>(null);
   const [selectedBottom, setSelectedBottom] = useState<Item | null>(null);
   const [selectedMyImage, setSelectedMyImage] = useState<MyImage | null>(null);
+  const [selectedOutfit, setSelectedOutfit] = useState<Outfit | null>(null);
 
   const [result, setResult] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -107,14 +119,17 @@ export default function TryOnScreen() {
 
   const tryOn = async () => {
     setLoading(true);
-    const response = await api.post(
-      "try-on",
-      [
-        selectedMyImage && selectedMyImage.image_url,
-        selectedTop && selectedTop.image_url,
-        selectedBottom && selectedBottom.image_url,
-      ].filter(Boolean)
-    );
+    const topAndBottom = selectedOutfit
+      ? selectedOutfit.items
+          .sort((a, b) => a.category_id - b.category_id)
+          .map((item) => item.image_url)
+      : [selectedTop?.image_url || "", selectedBottom?.image_url || ""];
+
+    const response = await api.post("try-on", {
+      human_url: selectedMyImage?.image_url,
+      top_url: topAndBottom[0],
+      bottom_url: topAndBottom[1],
+    });
     console.log("Try on response:", response);
     setResult(response.result);
     setLoading(false);
@@ -134,7 +149,10 @@ export default function TryOnScreen() {
           style={[styles.uploadButton]}
           onPress={() => setResult("")}
         >
-          <ThemedText style={styles.uploadButtonText}>
+          <ThemedText
+            style={styles.uploadButtonText}
+            disabled={selectedMyImage == null}
+          >
             {"Try On Another Items"}
           </ThemedText>
         </TouchableOpacity>
@@ -151,6 +169,70 @@ export default function TryOnScreen() {
             {categories.map((category, index) => (
               <Card key={index} {...category} />
             ))}
+
+            <ThemedView style={styles.cardContainer}>
+              <ThemedView style={[styles.card, isDarkMode && styles.cardDark]}>
+                <ThemedView style={styles.cardHeader}>
+                  <Ionicons
+                    name={"shirt-outline"}
+                    size={28}
+                    style={styles.cardIcon}
+                  />
+                  <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
+                    Outfits
+                  </ThemedText>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={isDarkMode ? "#A1A1A6" : "#8E8E93"}
+                  />
+                </ThemedView>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <ThemedView style={styles.imageContainer}>
+                    {outfits.map((outfit, index) => (
+                      <ThemedView key={index}>
+                        {outfit.items
+                          .sort((a, b) => a.category_id - b.category_id)
+                          .map((item, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              onPress={() => {
+                                if (
+                                  selectedOutfit &&
+                                  selectedOutfit.id == outfit.id
+                                ) {
+                                  setSelectedOutfit(null);
+                                } else {
+                                  setSelectedOutfit(outfit);
+                                }
+                              }}
+                            >
+                              {selectedOutfit &&
+                                selectedOutfit.id == outfit.id && (
+                                  <Ionicons
+                                    name="checkmark-circle"
+                                    size={20}
+                                    color="#000000"
+                                    style={{
+                                      position: "absolute",
+                                      top: 0,
+                                      right: 0,
+                                      zIndex: 1,
+                                    }}
+                                  />
+                                )}
+                              <Image
+                                source={{ uri: item.image_url }}
+                                style={styles.cardImage}
+                              />
+                            </TouchableOpacity>
+                          ))}
+                      </ThemedView>
+                    ))}
+                  </ThemedView>
+                </ScrollView>
+              </ThemedView>
+            </ThemedView>
 
             <ThemedView style={styles.cardContainer}>
               <ThemedView style={[styles.card, isDarkMode && styles.cardDark]}>
@@ -174,7 +256,16 @@ export default function TryOnScreen() {
                     {myImages.map((item, index) => (
                       <TouchableOpacity
                         key={index}
-                        onPress={() => setSelectedMyImage(item)}
+                        onPress={() => {
+                          if (
+                            selectedMyImage &&
+                            selectedMyImage.id == item.id
+                          ) {
+                            setSelectedMyImage(null);
+                          } else {
+                            setSelectedMyImage(item);
+                          }
+                        }}
                       >
                         <Image
                           source={{ uri: item.image_url }}
@@ -207,33 +298,13 @@ export default function TryOnScreen() {
           </>
         )}
 
-        {loading && (
-          <ThemedView style={[styles.loadingContainer]}>
-            <ActivityIndicator size="large" color="#000000" />
-            <ThemedText style={styles.loadingText}>Loading...</ThemedText>
-          </ThemedView>
-        )}
+        {loading && <Loading />}
       </ScrollView>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    marginTop: 16,
-    padding: 10,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 5,
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "column",
-    display: "flex",
-    height: 250,
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-  },
   container: {
     flex: 1,
     padding: 24,

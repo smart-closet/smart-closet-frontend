@@ -128,7 +128,7 @@ export default function UploadMyImageScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <Header title="Upload Cloth" hasGoBackBtn />
+      <Header title="Upload Your Image" hasGoBackBtn />
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
