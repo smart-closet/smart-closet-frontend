@@ -10,13 +10,12 @@ import {
   Switch,
   Text,
   View,
-    TextInput,
-    Alert
+  TextInput,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import * as Location from "expo-location";
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Item, useItems } from "@/hooks/useItems";
@@ -25,7 +24,8 @@ import Header from "@/components/Header";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import SpeechRecognition from 'react-speech-recognition';
+
+//import SpeechRecognition from 'react-speech-recognition';
 interface OutfitSuggestion {
   top: string;
   bottom: string;
@@ -74,100 +74,74 @@ export default function OutfitScreen() {
 
   const [weatherData, setWeatherData] = useState<any>(null);
 
-   //處理聲音的程式碼
-   const [isRecognizing, setIsRecognizing] = useState(false);
-   const [result, setResult] = useState("");
-   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
-   const [submittedText, setSubmittedText] = useState('');
 
-    useEffect(() => {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  //處理聲音的程式碼
+  const [isRecognizing, setIsRecognizing] = useState(false);
+  const [result, setResult] = useState("");
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
-        if (!SpeechRecognition) {
-            Alert.alert("Sorry, your browser does not support speech recognition.");
-            return;
-        }
+  useEffect(() => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
 
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.lang = "zh-TW";
+    if (!SpeechRecognition) {
+      Alert.alert("Sorry, your browser does not support speech recognition.");
+      return;
+    }
 
-        const clearPreviousTimeout = () => {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-                setTimeoutId(null);
-            }
-        };
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.lang = "zh-TW";
 
-        const handleResult = (event: SpeechRecognitionEvent) => {
-            clearPreviousTimeout();
-
-            // Make sure to append the latest result
-            const transcript = event.results[event.resultIndex][0].transcript;
-            setResult((prevResult) => prevResult + transcript);
-
-            // Set timeout for stopping the recognition after 2 seconds of inactivity
-            const newTimeoutId = setTimeout(() => {
-                recognition.stop();
-                setIsRecognizing(false);
-            }, 2000); // 2 seconds
-            setTimeoutId(newTimeoutId);
-        };
-
-        recognition.onresult = handleResult;
-        recognition.onend = () => {
-            clearPreviousTimeout();
-            setIsRecognizing(false);
-            console.log("Recognition ended.");
-        };
-
-        if (isRecognizing) {
-            recognition.start();
-            console.log("Microphone started.");
-        } else {
-            recognition.stop();
-            console.log("Microphone stopped.");
-        }
-
-        return () => {
-            recognition.stop();
-            clearPreviousTimeout();
-        };
-    }, [isRecognizing, timeoutId]);
-
-    const handleMicrophonePress = () => {
-        if (!isRecognizing) {
-            setIsRecognizing(true);
-        }
+    const clearPreviousTimeout = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        setTimeoutId(null);
+      }
     };
 
-    const handleSubmit = async () => {
-        if (result.trim() === '') {
-            Alert.alert("请输入一些内容。");
-            return;
-        }
+    const handleResult = (event: SpeechRecognitionEvent) => {
+      clearPreviousTimeout();
 
-        console.log("Submitted text:", result);
-        setSubmittedText(result);
-        setResult('');
+      // Make sure to append the latest result
+      const transcript = event.results[event.resultIndex][0].transcript;
+      setResult((prevResult) => prevResult + transcript);
 
-        // 发送请求到后端
-        try {
-            // 调用 getOutfitSuggestionsBySpeak，并传递相应的参数
-            const outfitSuggestions = await getOutfitSuggestionsBySpeak({
-                user_scenario: result, // 将用户输入的内容作为场景参数
-            });
-
-            // 处理返回的建议
-            console.log("Outfit Suggestions:", outfitSuggestions);
-
-            // 你可以在这里处理 outfitSuggestions，例如将其存储在状态中，或显示在 UI 上
-            Alert.alert(`已發散送給後端: ${JSON.stringify(outfitSuggestions)}`);
-        } catch (error) {
-            console.error("Error submitting data:", error);
-            Alert.alert("提交数据时出错，请稍后重试。");
-        }
+      // Set timeout for stopping the recognition after 2 seconds of inactivity
+      const newTimeoutId = setTimeout(() => {
+        recognition.stop();
+        setIsRecognizing(false);
+      }, 2000); // 2 seconds
+      setTimeoutId(newTimeoutId);
     };
+
+    recognition.onresult = handleResult;
+    recognition.onend = () => {
+      clearPreviousTimeout();
+      setIsRecognizing(false);
+      console.log("Recognition ended.");
+    };
+
+    if (isRecognizing) {
+      recognition.start();
+      console.log("Microphone started.");
+    } else {
+      recognition.stop();
+      console.log("Microphone stopped.");
+    }
+
+    return () => {
+      recognition.stop();
+      clearPreviousTimeout();
+    };
+  }, [isRecognizing, timeoutId]);
+
+  const handleMicrophonePress = () => {
+    if (!isRecognizing) {
+      setIsRecognizing(true);
+    }
+  };
+
 
   useEffect(() => {
     (async () => {
@@ -205,6 +179,7 @@ export default function OutfitScreen() {
         latitude: latitude ?? 0,
         longitude: longitude ?? 0,
         item_id: selectedItem ? selectedItem.id : undefined,
+        voice_occasion: result,
       });
 
       console.log("Suggestions:", suggestions);
@@ -250,38 +225,69 @@ export default function OutfitScreen() {
     <ThemedView style={{ flex: 1, padding: 24 }}>
       <Header title="Outfit" />
       <ScrollView showsVerticalScrollIndicator={false}>
-              <ThemedText type="subtitle" lightColor="#000" darkColor="#fff" style={{ marginVertical: 20 }}>
-                  AI voice Assistent
-              </ThemedText>
-              <ThemedView>
-                  <View style={styles.inputBlock}>
-                      <View style={styles.ScenarioContainer}>
-                          <TextInput
-                              style={styles.speech_input}
-                              placeholder="輸入你的內容"
-                              value={result}
-                              onChangeText={setResult} // 确保文本输入更新状态
-                          />
-                          <TouchableOpacity style={styles.iconContainer} onPress={handleMicrophonePress}>
-                              <FontAwesome5 name="microphone-alt" size={24} color="black" />
-                          </TouchableOpacity>
-                      </View>
-                      <TouchableOpacity style={styles.button2} onPress={handleSubmit}>
-                          <ThemedText style={{ color: "white" }}>Submit</ThemedText>
-                      </TouchableOpacity>
-                  </View>
-              </ThemedView>
-      
-      <ThemedView>
-          <ThemedText type="subtitle" lightColor="#000" darkColor="#fff" style={{ marginVertical: 20 }}>
-             Self-selection
-                  </ThemedText>
-                  <View style={[styles.rowContainer, { flexDirection: 'row', alignItems: 'flex-start' }]}>
-                      <MaterialIcons name="filter-1" size={16} color="black" style={{ marginRight: 5 }} />
-                      <Text style={[styles.sectionTitle, { lineHeight: 16 }]}> Choose Occasion</Text>
-                  </View>
-                 
-  
+
+        <ThemedText
+          type="subtitle"
+          lightColor="#000"
+          darkColor="#fff"
+          style={{ marginVertical: 20 }}
+        >
+          AI voice Assistent
+        </ThemedText>
+        <ThemedView>
+          <View style={styles.inputBlock}>
+            <View style={styles.ScenarioContainer}>
+              <TextInput
+                style={styles.speech_input}
+                placeholder="Say or enter something..."
+                value={result}
+                onChangeText={setResult}
+              />
+              <TouchableOpacity
+                style={styles.iconContainer}
+                onPress={handleMicrophonePress}
+              >
+                <FontAwesome5 name="microphone" size={18} color="black" />
+              </TouchableOpacity>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: buttonColor }]}
+            onPress={generateOutfit}
+          >
+            <ThemedText style={[{ color: "white" }]}>
+              Generate Outfit
+            </ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+
+        <ThemedView>
+          <ThemedText
+            type="subtitle"
+            lightColor="#000"
+            darkColor="#fff"
+            style={{ marginVertical: 20 }}
+          >
+            Self-selection
+          </ThemedText>
+          <View
+            style={[
+              styles.rowContainer,
+              { flexDirection: "row", alignItems: "flex-start" },
+            ]}
+          >
+            <MaterialIcons
+              name="filter-1"
+              size={16}
+              color="black"
+              style={{ marginRight: 5 }}
+            />
+            <Text style={[styles.sectionTitle, { lineHeight: 16 }]}>
+              {" "}
+              Choose Occasion
+            </Text>
+          </View>
+
           <Picker
             dropdownIconColor={isDarkMode ? "#FFFFFF" : "#000000"}
             selectedValue={occasion}
@@ -295,7 +301,13 @@ export default function OutfitScreen() {
 
           <ThemedView style={styles.toggleContainer}>
             <ThemedText style={[styles.sectionTitle, { marginBottom: 0 }]}>
-              📌 Consider Weather
+              <MaterialIcons
+                name="filter-2"
+                size={16}
+                color="black"
+                style={{ marginRight: 5 }}
+              />{" "}
+              Consider Weather
             </ThemedText>
             <Switch
               value={considerWeather}
@@ -338,7 +350,15 @@ export default function OutfitScreen() {
           )}
 
           <ThemedView style={styles.buttonContainer}>
-            <Text style={styles.sectionTitle}>📌 Specify Top or Bottom</Text>
+            <Text style={styles.sectionTitle}>
+              <MaterialIcons
+                name="filter-3"
+                size={16}
+                color="black"
+                style={{ marginRight: 5 }}
+              />{" "}
+              Specify Top or Bottom
+            </Text>
             <Switch
               value={considerItem}
               onValueChange={setConsiderItem}
@@ -478,9 +498,9 @@ export default function OutfitScreen() {
 const styles = StyleSheet.create({
 
   rowContainer: {
-        flexDirection: 'row',
-        alignItems: "center", // 垂直置中
-        marginBottom: 16, // 可以根據需要調整間距
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
   },
   loadingContainer: {
     marginTop: 16,
@@ -676,52 +696,52 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   inputBlock: {
-   flexDirection: "row",
-   alignItems: "center",
-      marginBottom: 16,
-      flex: 1,
 
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+    flex: 1,
+  },
+  speech_input: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 40,
+    borderColor: "gray",
+    borderWidth: 1,
+    borderRadius: 5,
+    marginRight: 8,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    position: "relative",
+  },
+  iconContainer: {
+    position: "absolute",
+    left: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  subHeaderStyle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginVertical: 4,
+  },
+  ScenarioContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
-    },
-    speech_input: {
-        flex: 1,
-        paddingVertical: 10,
-        paddingHorizontal: 40, // 增加內邊距以留出空間給圖標
-        borderColor: 'gray',
-        borderWidth: 1,
-        borderRadius: 5,
-        marginRight: 8,
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        position: 'relative',
-    },
-    iconContainer: {
-        position: 'absolute',
-        left: 10, // 根據需要調整圖標位置
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    subHeaderStyle: {
-        fontSize: 20, // 設定字體大小，比 Header 小一號
-        fontWeight: 'bold', // 可以選擇加粗或其他樣式
-        marginVertical: 4, // 可以調整上下邊距
-    },
-    ScenarioContainer: {
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-    },
+  button2: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
 
-    button2: {
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        
-        alignItems: "center",
-        borderWidth: 1,
-        borderRadius: 5,
-        marginLeft: 8,
-        backgroundColor: "#007AFF",
-    },
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 5,
+    marginLeft: 8,
+    backgroundColor: "#007AFF",
+  },
+
 });

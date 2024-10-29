@@ -40,6 +40,7 @@ interface OutfitSuggestionParams {
   latitude: number;
   longitude: number;
   item_id?: number;
+  voice_occasion?: string;
 }
 
 
@@ -61,7 +62,7 @@ interface UseItemsReturn {
   getOutfitSuggestions: (
     params: OutfitSuggestionParams
     ) => Promise<OutfitPair[]>;
-  getOutfitSuggestionsBySpeak: (params: ScenarioSuggestionParams) => Promise<OutfitPair[]>;
+
 }
 
 // Custom hook to handle item CRUD operations
@@ -119,6 +120,7 @@ export const useItems = (): UseItemsReturn => {
       consider_weather: params.consider_weather,
       user_occation: params.user_occation,
       item_id: params.item_id,
+      voice_occasion: params.voice_occasion,
     });
   };
 
