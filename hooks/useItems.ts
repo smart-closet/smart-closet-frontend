@@ -36,7 +36,7 @@ interface OutfitPair {
 
 interface OutfitSuggestionParams {
   consider_weather: boolean;
-  user_occation: string;
+  user_occasion: string;
   latitude: number;
   longitude: number;
   item_id?: number;
@@ -99,7 +99,7 @@ export const useItems = (): UseItemsReturn => {
     return await api.post(`rulebase/`, {
       temperature: temp.main.feels_like,
       consider_weather: params.consider_weather,
-      user_occation: params.user_occation,
+      user_occasion: params.user_occasion,
       item_id: params.item_id,
       voice_occasion: params.voice_occasion,
     });

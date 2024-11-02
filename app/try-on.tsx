@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
   Image,
   ScrollView,
   useColorScheme,
-  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
@@ -17,6 +16,7 @@ import Header from "@/components/Header";
 import { api } from "@/hooks/api";
 import { MyImage } from "@/hooks/useMyImages";
 import { Outfit, RootState } from "@/store";
+import { Loading } from "@/components/Loading";
 
 interface CardProps {
   title: string;
@@ -125,14 +125,11 @@ export default function TryOnScreen() {
           .map((item) => item.image_url)
       : [selectedTop?.image_url || "", selectedBottom?.image_url || ""];
 
-    const response = await api.post(
-      "try-on",
-      {
-        human_url: selectedMyImage?.image_url,
-        top_url: topAndBottom[0],
-        bottom_url: topAndBottom[1],
-      }
-    );
+    const response = await api.post("try-on", {
+      human_url: selectedMyImage?.image_url,
+      top_url: topAndBottom[0],
+      bottom_url: topAndBottom[1],
+    });
     console.log("Try on response:", response);
     setResult(response.result);
     setLoading(false);
@@ -152,7 +149,10 @@ export default function TryOnScreen() {
           style={[styles.uploadButton]}
           onPress={() => setResult("")}
         >
-          <ThemedText style={styles.uploadButtonText} disabled={selectedMyImage == null}>
+          <ThemedText
+            style={styles.uploadButtonText}
+            disabled={selectedMyImage == null}
+          >
             {"Try On Another Items"}
           </ThemedText>
         </TouchableOpacity>
@@ -298,33 +298,13 @@ export default function TryOnScreen() {
           </>
         )}
 
-        {loading && (
-          <ThemedView style={[styles.loadingContainer]}>
-            <ActivityIndicator size="large" color="#000000" />
-            <ThemedText style={styles.loadingText}>Loading...</ThemedText>
-          </ThemedView>
-        )}
+        {loading && <Loading />}
       </ScrollView>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    marginTop: 16,
-    padding: 10,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 5,
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "column",
-    display: "flex",
-    height: 250,
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-  },
   container: {
     flex: 1,
     padding: 24,

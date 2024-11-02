@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { useRouter } from "expo-router";
 
@@ -25,7 +25,14 @@ export default function Header({
         </TouchableOpacity>
       )}
       <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
+        <View style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <Image
+            source={require("../assets/images/favicon.jpg")}
+            style={{ width: 24, height: 24 }}
+          />
+          <Text style={styles.title}>{title}</Text>
+        </View>
+
         <Ionicons name="search-outline" size={24} color="#000" />
       </View>
       {text && <Text style={styles.welcome}>{text}</Text>}
