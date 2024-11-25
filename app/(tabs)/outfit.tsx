@@ -32,6 +32,7 @@ interface OutfitSuggestion {
   bottom: Item;
   outfitImages: string[];
   score: number;
+  tag: string;
 }
 
 export default function OutfitScreen() {
@@ -191,6 +192,7 @@ export default function OutfitScreen() {
           ...suggestion,
           outfitImages: [suggestion.top.image_url, suggestion.bottom.image_url],
           score: suggestion.score,
+          tag: suggestion.tag,
         }));
       setOutfitSuggestions(topFiveSuggestions);
     } else {
@@ -474,6 +476,13 @@ export default function OutfitScreen() {
                           {(suggestion.score * 100).toFixed(0)}
                         </ThemedText>
                       </ThemedView>
+
+                      <ThemedView style={styles.scoreContainer}>
+                        <ThemedText style={styles.scoreText}>
+                        {`${suggestion.tag}風`}
+                        </ThemedText>
+                      </ThemedView>
+                      
                     </ThemedView>
                   </ThemedView>
                   <ThemedView style={styles.outfitDetails}>
