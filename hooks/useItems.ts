@@ -10,6 +10,8 @@ export interface Item {
   category_id: number;
   category: Category;
   subcategory: Subcategory
+  color: string;
+  save_color: string;
 }
 
 interface Attribute {
