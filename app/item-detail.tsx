@@ -62,7 +62,14 @@ const ItemDetailScreen = () => {
       <ThemedView style={styles.infoContainer}>
         <ThemedText style={styles.infoLabel}>Category</ThemedText>
         <ThemedText style={styles.infoValue}>{item.category.name}</ThemedText>
-      </ThemedView>
+          </ThemedView>
+
+      <ThemedView style={styles.infoContainer}>
+              <ThemedText style={styles.infoLabel}>Dominant Color</ThemedText>
+              <View style={[styles.colorRectangle, { backgroundColor: item.color }]} />
+              
+
+       </ThemedView>
 
       <ThemedView style={styles.infoContainer}>
         <ThemedText style={styles.infoLabel}>Subcategory</ThemedText>
@@ -83,8 +90,9 @@ const ItemDetailScreen = () => {
               </View>
             ))}
           </View>
-        </ThemedView>
-      )}
+              </ThemedView>
+
+          )}
     </ThemedView>
   );
 };
@@ -150,7 +158,20 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 14,
-  },
+    },
+    colorRectangle: {
+        width: 20,            // 增大寬度，改為長方形
+        height: 20,           // 增大高度，改為長方形
+        borderRadius: 5,      // 可以調整邊角圓角的程度，設為 5 使其邊緣圓滑
+        marginLeft: 8,        // 增加與文字之間的間距
+        borderWidth: 1,       // 增加邊框讓顏色更明顯
+        borderColor: "#ccc",  // 邊框顏色
+    },
+    underline: {
+        height: 0.5,
+        backgroundColor: "#000", // 底線的顏色
+        marginVertical: 1, // 與上方和下方內容的距離
+    },
 });
 
 export default ItemDetailScreen;
