@@ -34,6 +34,7 @@ interface OutfitPair {
   top: Item;
   bottom: Item;
   score: number;
+  tag: string;
 }
 
 interface OutfitSuggestionParams {

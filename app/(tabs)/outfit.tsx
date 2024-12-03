@@ -166,9 +166,8 @@ export default function OutfitScreen() {
 
   const generateOutfit = async () => {
     setLoading(true);
+    setErrorMsg("");
     setOutfitSuggestions([]);
-
-     console.log("checkkk:",result);
 
     let latitude = location?.coords.latitude;
     let longitude = location?.coords.longitude;
@@ -195,6 +194,7 @@ export default function OutfitScreen() {
           tag: suggestion.tag,
         }));
       setOutfitSuggestions(topFiveSuggestions);
+      setErrorMsg("");
     } else {
       setErrorMsg("No outfit suggestions found.");
     }
