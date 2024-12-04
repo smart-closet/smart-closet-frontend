@@ -142,7 +142,7 @@ export default function TryOnScreen() {
         <ThemedView style={styles.resultContainer}>
           <Image
             source={{ uri: "data:image/jpg;base64," + result }}
-            style={{ width: "100%", height: 350, marginHorizontal: "auto" }}
+            style={{ width: "100%", height: 450, marginHorizontal: "auto", objectFit: "contain" }}
           />
         </ThemedView>
         <TouchableOpacity
